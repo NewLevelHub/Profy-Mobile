@@ -13,8 +13,20 @@ export type AppStackParamList = {
   ProfileSetup: undefined;
   ArtifactsSetup: undefined;
   GoalSelection: undefined;
+  Assessment: undefined;
   Home: undefined;
 };
+
+export type AssessmentGoal = 'explore' | 'profession' | 'university';
+export type AssessmentStatus = 'in_progress' | 'completed';
+
+export interface AssessmentResponse {
+  id: string;
+  goal: AssessmentGoal;
+  status: AssessmentStatus;
+  current_block: number;
+  created_at: string;
+}
 
 export type ArtifactType = 'hobby' | 'club' | 'sport' | 'achievement' | 'goal' | 'book' | 'game' | 'topic' | 'profession' | 'university' | 'dream';
 
