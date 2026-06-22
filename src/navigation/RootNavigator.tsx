@@ -12,6 +12,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
+import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -27,18 +28,23 @@ function AuthNavigator() {
 }
 
 function AppNavigator() {
-  const profile = useProfileStore((s) => s.profile);
   const setProfile = useProfileStore((s) => s.setProfile);
-  const [initialized, setInitialized] = useState(false);
+  const clearProfile = useProfileStore((s) => s.clearProfile);
+  const [initialRoute, setInitialRoute] = useState<keyof AppStackParamList | null>(null);
 
   useEffect(() => {
     getProfile()
-      .then(setProfile)
-      .catch(() => {})
-      .finally(() => setInitialized(true));
+      .then((p) => {
+        setProfile(p);
+        setInitialRoute('Home');
+      })
+      .catch(() => {
+        clearProfile();
+        setInitialRoute('ProfileSetup');
+      });
   }, []);
 
-  if (!initialized) {
+  if (initialRoute === null) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="#4F46E5" />
@@ -49,10 +55,11 @@ function AppNavigator() {
   return (
     <AppStack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName={profile ? 'Home' : 'ProfileSetup'}
+      initialRouteName={initialRoute}
     >
       <AppStack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <AppStack.Screen name="ArtifactsSetup" component={ArtifactsSetupScreen} />
+      <AppStack.Screen name="GoalSelection" component={GoalSelectionScreen} />
       <AppStack.Screen name="Home" component={HomeScreen} />
     </AppStack.Navigator>
   );

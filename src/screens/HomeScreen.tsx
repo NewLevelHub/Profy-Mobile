@@ -1,15 +1,22 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuthStore } from '../store/authStore';
+import { useProfileStore } from '../store/profileStore';
 
 export default function HomeScreen() {
   const logout = useAuthStore((s) => s.logout);
+  const clearProfile = useProfileStore((s) => s.clearProfile);
+
+  function handleLogout() {
+    clearProfile();
+    logout();
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Главная</Text>
       <Text style={styles.placeholder}>Главный экран — в разработке</Text>
-      <TouchableOpacity style={styles.button} onPress={logout}>
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
         <Text style={styles.buttonText}>Выйти</Text>
       </TouchableOpacity>
     </View>
