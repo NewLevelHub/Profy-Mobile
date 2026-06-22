@@ -12,3 +12,14 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   Home: undefined;
 };
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  user: User;
+}

@@ -1,19 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { useAuthStore } from '../store/authStore';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 };
 
 export default function SplashScreen({ navigation }: Props) {
+  const token = useAuthStore((s) => s.token);
+  const hasHydrated = useAuthStore((s) => s._hasHydrated);
+  const [elapsed, setElapsed] = useState(false);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('Auth');
-    }, 1500);
+    const timer = setTimeout(() => setElapsed(true), 1500);
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, []);
+
+  useEffect(() => {
+    if (elapsed && hasHydrated) {
+      navigation.replace(token ? 'App' : 'Auth');
+    }
+  }, [elapsed, hasHydrated, token, navigation]);
 
   return (
     <View style={styles.container}>
