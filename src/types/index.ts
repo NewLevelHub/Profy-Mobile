@@ -10,6 +10,8 @@ export type AuthStackParamList = {
 };
 
 export type AppStackParamList = {
+  ProfileSetup: undefined;
+  ArtifactsSetup: undefined;
   Home: undefined;
 };
 
@@ -22,4 +24,25 @@ export interface User {
 export interface TokenResponse {
   access_token: string;
   user: User;
+}
+
+export type AgeGroup = 'junior' | 'middle' | 'senior';
+
+export interface ProfilePayload {
+  name: string;
+  age: number;
+  grade: number;
+  city: string;
+  country: string;
+  language: string;
+  subjects_like: string[];
+  subjects_dislike: string[];
+  subjects_easy: string[];
+  subjects_hard: string[];
+}
+
+export interface ProfileResponse extends ProfilePayload {
+  id: string;
+  user_id: string;
+  age_group: AgeGroup;
 }
