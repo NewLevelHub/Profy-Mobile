@@ -48,6 +48,38 @@ export interface TokenResponse {
 
 export type AgeGroup = 'junior' | 'middle' | 'senior';
 
+export type AssessmentBlock =
+  | 'interests'
+  | 'thinking'
+  | 'personality'
+  | 'motivation'
+  | 'academic'
+  | 'directions'
+  | 'goal_clarification'
+  | 'university';
+
+export interface QuestionOption {
+  text: string;
+  index: number;
+}
+
+export interface Question {
+  id: string;
+  block: AssessmentBlock;
+  text: string;
+  options: QuestionOption[];
+}
+
+export interface AnswerPayload {
+  question_id: string;
+  selected_option_index: number;
+}
+
+export interface SaveAnswersPayload {
+  block: AssessmentBlock;
+  answers: AnswerPayload[];
+}
+
 export interface ProfilePayload {
   name: string;
   age: number;
