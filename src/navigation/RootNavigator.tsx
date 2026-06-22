@@ -13,6 +13,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
 import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
+import AssessmentScreen from '../screens/AssessmentScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -60,6 +61,7 @@ function AppNavigator() {
       <AppStack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <AppStack.Screen name="ArtifactsSetup" component={ArtifactsSetupScreen} />
       <AppStack.Screen name="GoalSelection" component={GoalSelectionScreen} />
+      <AppStack.Screen name="Assessment" component={AssessmentScreen} />
       <AppStack.Screen name="Home" component={HomeScreen} />
     </AppStack.Navigator>
   );
