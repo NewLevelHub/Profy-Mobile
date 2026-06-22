@@ -12,8 +12,16 @@ export type AuthStackParamList = {
 export type AppStackParamList = {
   ProfileSetup: undefined;
   ArtifactsSetup: undefined;
+  GoalSelection: undefined;
   Home: undefined;
 };
+
+export type ArtifactType = 'hobby' | 'club' | 'sport' | 'achievement' | 'goal' | 'book' | 'game' | 'topic' | 'profession' | 'university' | 'dream';
+
+export interface ArtifactItem {
+  type: ArtifactType;
+  value: string;
+}
 
 export interface User {
   id: string;
