@@ -15,6 +15,7 @@ import type { AppStackParamList } from '../../types';
 import { createProfile } from '../../api/profile';
 import { useProfileStore } from '../../store/profileStore';
 import SubjectCard from '../../components/common/SubjectCard';
+import { colors, typography, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProfileSetup'>;
 
@@ -124,7 +125,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={name}
               onChangeText={(v) => { setName(v); setErrors((e) => ({ ...e, name: undefined })); }}
               placeholder="Например, Арман"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
               autoFocus
             />
             {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
@@ -135,7 +136,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={age}
               onChangeText={(v) => { setAge(v); setErrors((e) => ({ ...e, age: undefined })); }}
               placeholder="от 6 до 18"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               maxLength={2}
             />
@@ -147,7 +148,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={grade}
               onChangeText={(v) => { setGrade(v); setErrors((e) => ({ ...e, grade: undefined })); }}
               placeholder="от 1 до 12"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
               keyboardType="number-pad"
               maxLength={2}
             />
@@ -166,7 +167,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={city}
               onChangeText={setCity}
               placeholder="Например, Алматы"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
               autoFocus
             />
 
@@ -176,7 +177,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={country}
               onChangeText={setCountry}
               placeholder="Например, Казахстан"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
             />
 
             <Text style={styles.label}>Язык обучения</Text>
@@ -185,7 +186,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               value={language}
               onChangeText={setLanguage}
               placeholder="Русский / Казахский / Английский"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={colors.textMuted}
             />
           </View>
         )}
@@ -239,7 +240,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.onPrimary} />
             ) : (
               <Text style={styles.nextButtonText}>Готово</Text>
             )}
@@ -274,122 +275,113 @@ function SubjectSection({
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing['2xl'],
     paddingTop: 56,
-    paddingBottom: 8,
-    backgroundColor: '#fff',
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.surface,
   },
   progressTrack: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.track,
     overflow: 'hidden',
   },
   progressFill: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#4F46E5',
+    backgroundColor: colors.primary,
   },
   stepLabel: {
-    marginTop: 8,
-    fontSize: 12,
-    color: '#6B7280',
+    ...typography.small,
+    marginTop: spacing.sm,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 24,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing['2xl'],
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...typography.h1,
     marginBottom: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...typography.body,
     marginBottom: 28,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    ...typography.caption,
     marginBottom: 6,
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.body,
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: colors.danger,
   },
   errorText: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#EF4444',
+    ...typography.small,
+    marginTop: spacing.xs,
+    color: colors.danger,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    ...typography.label,
+    marginBottom: spacing.sm,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -4,
+    marginHorizontal: -spacing.xs,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingBottom: 32,
-    backgroundColor: '#fff',
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing['3xl'],
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    gap: 12,
+    borderTopColor: colors.border,
+    gap: spacing.md,
   },
   backButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     alignItems: 'center',
   },
   backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
+    ...typography.bodyStrong,
+    color: colors.textSecondary,
   },
   nextButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#4F46E5',
+    borderRadius: radii.md,
+    backgroundColor: colors.primary,
     alignItems: 'center',
   },
   nextButtonDisabled: {
-    backgroundColor: '#A5B4FC',
+    backgroundColor: colors.primaryDisabled,
   },
   nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
 });

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { colors, typography, spacing } from '../constants/themes/themes';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Splash'>;
@@ -37,16 +38,14 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   title: {
-    fontSize: 40,
-    fontWeight: 'bold',
-    color: '#4F46E5',
+    ...typography.display,
+    color: colors.primary,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 8,
+    ...typography.body,
+    marginTop: spacing.sm,
   },
 });

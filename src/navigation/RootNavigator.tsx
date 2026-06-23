@@ -14,6 +14,7 @@ import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
 import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
 import AssessmentScreen from '../screens/AssessmentScreen';
+import { colors } from '../constants/themes/themes';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -48,7 +49,7 @@ function AppNavigator() {
   if (initialRoute === null) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -89,6 +90,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
 });

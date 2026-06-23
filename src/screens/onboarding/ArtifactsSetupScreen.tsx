@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ArtifactItem } from '../../types';
 import { saveArtifacts } from '../../api/artifacts';
 import SubjectCard from '../../components/common/SubjectCard';
+import { colors, typography, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ArtifactsSetup'>;
 
@@ -196,7 +197,7 @@ export default function ArtifactsSetupScreen({ navigation }: Props) {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
             <Text style={styles.nextButtonText}>Далее</Text>
           )}
@@ -229,7 +230,7 @@ function TagInput({
           value={inputValue}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.textMuted}
           onSubmitEditing={onAdd}
           returnKeyType="done"
           blurOnSubmit={false}
@@ -261,145 +262,138 @@ function TagInput({
 const styles = StyleSheet.create({
   flex: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing['2xl'],
     paddingTop: 56,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
+    paddingBottom: spacing.lg,
+    backgroundColor: colors.surface,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...typography.h1,
     marginBottom: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...typography.body,
   },
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing.sm,
+    paddingBottom: spacing['2xl'],
   },
   section: {
     marginBottom: 28,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
+    ...typography.label,
+    marginBottom: spacing.xs,
   },
   sectionHint: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginBottom: 8,
+    ...typography.small,
+    color: colors.textMuted,
+    marginBottom: spacing.sm,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -4,
-    marginTop: 4,
+    marginHorizontal: -spacing.xs,
+    marginTop: spacing.xs,
   },
   tagInputRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginTop: 8,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   tagInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
+    borderColor: colors.border,
+    borderRadius: radii.md,
     paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    paddingVertical: spacing.md,
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.label,
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   addButton: {
     width: 46,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4F46E5',
-    borderRadius: 12,
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
   },
   addButtonText: {
     fontSize: 24,
-    color: '#fff',
+    color: colors.onPrimary,
     lineHeight: 28,
   },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
+    marginTop: spacing.sm,
     gap: 6,
   },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EEF2FF',
-    borderRadius: 16,
-    paddingHorizontal: 12,
+    backgroundColor: colors.primaryGhost,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
     gap: 6,
   },
   tagText: {
-    fontSize: 13,
-    color: '#4F46E5',
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.primaryDeep,
   },
   tagRemove: {
-    fontSize: 16,
-    color: '#818CF8',
+    fontSize: fontSize.body,
+    color: colors.textMuted,
     lineHeight: 18,
   },
   errorText: {
-    fontSize: 13,
-    color: '#EF4444',
+    ...typography.caption,
+    color: colors.danger,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingBottom: 32,
-    backgroundColor: '#fff',
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.lg,
+    paddingBottom: spacing['3xl'],
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    gap: 12,
+    borderTopColor: colors.border,
+    gap: spacing.md,
   },
   skipButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
+    borderColor: colors.border,
     alignItems: 'center',
   },
   skipButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
+    ...typography.bodyStrong,
+    color: colors.textSecondary,
   },
   nextButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#4F46E5',
+    borderRadius: radii.md,
+    backgroundColor: colors.primary,
     alignItems: 'center',
   },
   nextButtonDisabled: {
-    backgroundColor: '#A5B4FC',
+    backgroundColor: colors.primaryDisabled,
   },
   nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
 });

@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import type { AgeGroup } from '../../types';
+import { colors, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
 
 const JUNIOR_EMOJI = ['⭐', '🎨', '🏃', '📖', '🌿', '🎵', '🔢', '🌍', '💡', '🎭'];
 
@@ -60,24 +61,24 @@ export default function OptionCard({ text, index, selected, ageGroup, onPress }:
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.bg,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
-    marginBottom: 12,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
   cardJunior: {
     padding: 18,
-    borderRadius: 18,
+    borderRadius: radii.md,
   },
   cardSenior: {
     padding: 14,
-    borderRadius: 12,
+    borderRadius: radii.sm,
   },
   cardSelected: {
-    borderColor: '#4F46E5',
-    backgroundColor: '#EEF2FF',
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
   },
   emoji: {
     fontSize: 28,
@@ -85,19 +86,19 @@ const styles = StyleSheet.create({
   },
   text: {
     flex: 1,
-    color: '#374151',
-    fontWeight: '500',
+    color: colors.textSecondary,
+    fontFamily: fontFamily.medium,
   },
   textJunior: {
     fontSize: 17,
     lineHeight: 24,
   },
   textSenior: {
-    fontSize: 15,
+    fontSize: fontSize.label,
     lineHeight: 21,
   },
   textSelected: {
-    color: '#4F46E5',
-    fontWeight: '600',
+    color: colors.primary,
+    fontFamily: fontFamily.semibold,
   },
 });

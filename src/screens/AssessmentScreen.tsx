@@ -21,6 +21,7 @@ import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
 import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
+import { colors, typography, spacing, radii, fontFamily, fontSize } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
 
@@ -232,7 +233,7 @@ export default function AssessmentScreen({ navigation }: Props) {
 
       {phase === 'loading' && (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#4F46E5" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       )}
 
@@ -297,7 +298,7 @@ export default function AssessmentScreen({ navigation }: Props) {
                   activeOpacity={0.8}
                 >
                   {saving ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <ActivityIndicator size="small" color={colors.onPrimary} />
                   ) : (
                     <Text style={styles.nextBtnText}>
                       {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
@@ -316,142 +317,131 @@ export default function AssessmentScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   headerLeft: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   blockCounter: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
+    ...typography.small,
     marginBottom: 2,
   },
   blockName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    ...typography.label,
+    marginBottom: spacing.sm,
   },
   progressTrack: {
     height: 6,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.track,
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: 6,
-    backgroundColor: '#4F46E5',
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   closeBtn: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
+    borderRadius: radii.md,
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   closeBtnText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    padding: spacing['3xl'],
   },
   introBadge: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 6,
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   introBadgeText: {
-    color: '#4F46E5',
-    fontSize: 13,
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.primaryDeep,
   },
   introTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
+    ...typography.h1,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   introDescription: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...typography.body,
     textAlign: 'center',
-    lineHeight: 24,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    padding: spacing['2xl'],
     paddingBottom: 40,
   },
   errorText: {
-    fontSize: 14,
-    color: '#EF4444',
-    marginBottom: 12,
+    ...typography.caption,
+    color: colors.danger,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   retryBtn: {
     alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: '#EEF2FF',
-    marginBottom: 24,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    borderRadius: radii.sm,
+    backgroundColor: colors.primarySoft,
+    marginBottom: spacing['2xl'],
   },
   retryBtnText: {
-    fontSize: 14,
-    color: '#4F46E5',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.primaryDeep,
   },
   questionText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.subtitle,
+    color: colors.text,
     lineHeight: 28,
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
   questionTextJunior: {
     fontSize: 24,
     lineHeight: 34,
   },
   options: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   nextBtn: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: colors.primary,
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   nextBtnDisabled: {
     opacity: 0.7,
   },
   nextBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
 });

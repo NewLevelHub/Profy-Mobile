@@ -14,6 +14,7 @@ import axios from 'axios';
 import { registerUser, loginUser } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { AuthStackParamList } from '../types';
+import { colors, typography, spacing, radii, fontFamily, fontSize } from '../constants/themes/themes';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Register'>;
@@ -109,7 +110,7 @@ export default function RegisterScreen({ navigation }: Props) {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
             <Text style={styles.buttonText}>Зарегистрироваться</Text>
           )}
@@ -127,65 +128,63 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   container: {
     flex: 1,
-    padding: 24,
+    padding: spacing['2xl'],
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 32,
+    ...typography.h1,
+    marginBottom: spacing['3xl'],
   },
   field: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   input: {
     height: 48,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    borderColor: colors.border,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.md,
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.body,
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: colors.danger,
   },
   fieldError: {
-    marginTop: 4,
-    fontSize: 12,
-    color: '#EF4444',
+    ...typography.small,
+    marginTop: spacing.xs,
+    color: colors.danger,
   },
   formError: {
-    marginBottom: 12,
-    fontSize: 14,
-    color: '#EF4444',
+    ...typography.caption,
+    marginBottom: spacing.md,
+    color: colors.danger,
     textAlign: 'center',
   },
   button: {
     height: 48,
-    backgroundColor: '#4F46E5',
-    borderRadius: 8,
+    backgroundColor: colors.primary,
+    borderRadius: radii.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
   link: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     alignItems: 'center',
   },
   linkText: {
-    color: '#4F46E5',
-    fontSize: 14,
+    ...typography.caption,
+    color: colors.primary,
   },
 });

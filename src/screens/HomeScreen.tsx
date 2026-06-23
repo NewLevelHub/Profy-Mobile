@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
+import { colors, typography, spacing, radii } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
 
@@ -38,41 +39,37 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 12,
+    ...typography.h1,
+    marginBottom: spacing.md,
   },
   placeholder: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginBottom: 32,
+    ...typography.caption,
+    color: colors.textMuted,
+    marginBottom: spacing['3xl'],
   },
   btnPrimary: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#4F46E5',
-    marginBottom: 12,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    borderRadius: radii.sm,
+    backgroundColor: colors.primary,
+    marginBottom: spacing.md,
   },
   btnPrimaryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
   btnOutline: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    borderRadius: radii.sm,
     borderWidth: 1,
-    borderColor: '#EF4444',
+    borderColor: colors.danger,
   },
   btnOutlineText: {
-    color: '#EF4444',
-    fontSize: 14,
-    fontWeight: '600',
+    ...typography.bodyStrong,
+    color: colors.danger,
   },
 });

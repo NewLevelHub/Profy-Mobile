@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { colors, typography, spacing, radii } from '../../constants/themes/themes';
 
 interface Props {
   label: string;
@@ -22,23 +23,21 @@ export default React.memo(function SubjectCard({ label, selected, onPress }: Pro
 const styles = StyleSheet.create({
   card: {
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.pill,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#F9FAFB',
-    margin: 4,
+    borderColor: colors.border,
+    backgroundColor: colors.bg,
+    margin: spacing.xs,
   },
   selected: {
-    backgroundColor: '#4F46E5',
-    borderColor: '#4F46E5',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   label: {
-    fontSize: 13,
-    color: '#374151',
+    ...typography.caption,
   },
   labelSelected: {
-    color: '#fff',
-    fontWeight: '600',
+    color: colors.onPrimary,
   },
 });
