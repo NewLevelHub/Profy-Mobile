@@ -10,11 +10,12 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ArtifactItem } from '../../types';
 import { saveArtifacts } from '../../api/artifacts';
 import SubjectCard from '../../components/common/SubjectCard';
-import { colors, typography, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ArtifactsSetup'>;
 
@@ -99,125 +100,140 @@ export default function ArtifactsSetupScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Твои увлечения и цели</Text>
-        <Text style={styles.subtitle}>
-          Расскажи, чем занимаешься и о чём мечтаешь. Это поможет нам лучше понять тебя
-        </Text>
-      </View>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Хобби и занятия</Text>
-          <View style={styles.chipRow}>
-            {HOBBIES.map((h) => (
-              <SubjectCard
-                key={h}
-                label={h}
-                selected={hobbies.includes(h)}
-                onPress={() => setHobbies((prev) => toggle(prev, h))}
-              />
-            ))}
-          </View>
+        {/* ── Header ───────────────────────────────────────────────────── */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Твои увлечения и цели</Text>
+          <Text style={styles.subtitle}>
+            Расскажи, чем занимаешься и о чём мечтаешь
+          </Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Кружки и секции</Text>
-          <View style={styles.chipRow}>
-            {CLUBS.map((c) => (
-              <SubjectCard
-                key={c}
-                label={c}
-                selected={clubs.includes(c)}
-                onPress={() => setClubs((prev) => toggle(prev, c))}
-              />
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Достижения</Text>
-          <Text style={styles.sectionHint}>Грамоты, победы, проекты, сертификаты</Text>
-          <TagInput
-            placeholder="Например, призёр олимпиады по математике"
-            tags={achievements}
-            inputValue={achievementInput}
-            onChangeText={setAchievementInput}
-            onAdd={() => addTag(achievementInput, setAchievements, setAchievementInput)}
-            onRemove={(tag) => setAchievements((prev) => prev.filter((t) => t !== tag))}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Мечты и цели</Text>
-          <Text style={styles.sectionHint}>Чего хочешь достичь или попробовать</Text>
-          <TagInput
-            placeholder="Например, создать своё приложение"
-            tags={dreams}
-            inputValue={dreamInput}
-            onChangeText={setDreamInput}
-            onAdd={() => addTag(dreamInput, setDreams, setDreamInput)}
-            onRemove={(tag) => setDreams((prev) => prev.filter((t) => t !== tag))}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Профессии, которые уже интересны</Text>
-          <TagInput
-            placeholder="Например, программист, архитектор"
-            tags={professions}
-            inputValue={professionInput}
-            onChangeText={setProfessionInput}
-            onAdd={() => addTag(professionInput, setProfessions, setProfessionInput)}
-            onRemove={(tag) => setProfessions((prev) => prev.filter((t) => t !== tag))}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Страны или университеты, которые интересны</Text>
-          <TagInput
-            placeholder="Например, MIT, Казахстан, Великобритания"
-            tags={targets}
-            inputValue={targetInput}
-            onChangeText={setTargetInput}
-            onAdd={() => addTag(targetInput, setTargets, setTargetInput)}
-            onRemove={(tag) => setTargets((prev) => prev.filter((t) => t !== tag))}
-          />
-        </View>
-
-        {saveError && (
-          <Text style={styles.errorText}>Не удалось сохранить. Попробуй ещё раз</Text>
-        )}
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipButtonText}>Пропустить</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.nextButton, loading && styles.nextButtonDisabled]}
-          onPress={handleNext}
-          disabled={loading}
+        {/* ── Content ──────────────────────────────────────────────────── */}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {loading ? (
-            <ActivityIndicator color={colors.onPrimary} />
-          ) : (
-            <Text style={styles.nextButtonText}>Далее</Text>
+          <Section title="Хобби и занятия" emoji="🎨">
+            <View style={styles.chipRow}>
+              {HOBBIES.map((h) => (
+                <SubjectCard
+                  key={h}
+                  label={h}
+                  selected={hobbies.includes(h)}
+                  onPress={() => setHobbies((prev) => toggle(prev, h))}
+                />
+              ))}
+            </View>
+          </Section>
+
+          <Section title="Кружки и секции" emoji="🏫">
+            <View style={styles.chipRow}>
+              {CLUBS.map((c) => (
+                <SubjectCard
+                  key={c}
+                  label={c}
+                  selected={clubs.includes(c)}
+                  onPress={() => setClubs((prev) => toggle(prev, c))}
+                />
+              ))}
+            </View>
+          </Section>
+
+          <Section title="Достижения" emoji="🏆" hint="Грамоты, победы, проекты, сертификаты">
+            <TagInput
+              placeholder="Например, призёр олимпиады по математике"
+              tags={achievements}
+              inputValue={achievementInput}
+              onChangeText={setAchievementInput}
+              onAdd={() => addTag(achievementInput, setAchievements, setAchievementInput)}
+              onRemove={(tag) => setAchievements((prev) => prev.filter((t) => t !== tag))}
+            />
+          </Section>
+
+          <Section title="Мечты и цели" emoji="✨" hint="Чего хочешь достичь или попробовать">
+            <TagInput
+              placeholder="Например, создать своё приложение"
+              tags={dreams}
+              inputValue={dreamInput}
+              onChangeText={setDreamInput}
+              onAdd={() => addTag(dreamInput, setDreams, setDreamInput)}
+              onRemove={(tag) => setDreams((prev) => prev.filter((t) => t !== tag))}
+            />
+          </Section>
+
+          <Section title="Интересные профессии" emoji="💼">
+            <TagInput
+              placeholder="Например, программист, архитектор"
+              tags={professions}
+              inputValue={professionInput}
+              onChangeText={setProfessionInput}
+              onAdd={() => addTag(professionInput, setProfessions, setProfessionInput)}
+              onRemove={(tag) => setProfessions((prev) => prev.filter((t) => t !== tag))}
+            />
+          </Section>
+
+          <Section title="Страны и университеты" emoji="🌍">
+            <TagInput
+              placeholder="Например, MIT, Великобритания"
+              tags={targets}
+              inputValue={targetInput}
+              onChangeText={setTargetInput}
+              onAdd={() => addTag(targetInput, setTargets, setTargetInput)}
+              onRemove={(tag) => setTargets((prev) => prev.filter((t) => t !== tag))}
+            />
+          </Section>
+
+          {saveError && (
+            <Text style={styles.errorText}>Не удалось сохранить. Попробуй ещё раз</Text>
           )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        </ScrollView>
+
+        {/* ── Footer ───────────────────────────────────────────────────── */}
+        <View style={styles.footer}>
+          <TouchableOpacity style={styles.skipBtn} onPress={handleSkip} activeOpacity={0.75}>
+            <Text style={styles.skipBtnText}>Пропустить</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.nextBtn, loading && styles.nextBtnDisabled]}
+            onPress={handleNext}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            {loading
+              ? <ActivityIndicator color={colors.onPrimary} />
+              : <Text style={styles.nextBtnText}>Далее</Text>
+            }
+          </TouchableOpacity>
+        </View>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function Section({
+  title, emoji, hint, children,
+}: {
+  title: string; emoji: string; hint?: string; children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{emoji}  {title}</Text>
+      {hint ? <Text style={styles.sectionHint}>{hint}</Text> : null}
+      {children}
+    </View>
   );
 }
 
 function TagInput({
-  placeholder,
-  tags,
-  inputValue,
-  onChangeText,
-  onAdd,
-  onRemove,
+  placeholder, tags, inputValue, onChangeText, onAdd, onRemove,
 }: {
   placeholder: string;
   tags: string[];
@@ -239,8 +255,8 @@ function TagInput({
           returnKeyType="done"
           blurOnSubmit={false}
         />
-        <TouchableOpacity style={styles.addButton} onPress={onAdd} activeOpacity={0.7}>
-          <Text style={styles.addButtonText}>+</Text>
+        <TouchableOpacity style={styles.addBtn} onPress={onAdd} activeOpacity={0.8}>
+          <Text style={styles.addBtnText}>+</Text>
         </TouchableOpacity>
       </View>
       {tags.length > 0 && (
@@ -263,47 +279,73 @@ function TagInput({
   );
 }
 
+// ── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  flex: {
+  safe: {
     flex: 1,
     backgroundColor: colors.bg,
   },
+  flex: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+
+  // ── Header
   header: {
     paddingHorizontal: spacing['2xl'],
-    paddingTop: 56,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   title: {
-    ...typography.h1,
-    marginBottom: 6,
+    fontFamily: fontFamily.black,
+    fontSize: 27,
+    lineHeight: 30,
+    letterSpacing: -0.5,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
   subtitle: {
     ...typography.body,
+    color: colors.textSecondary,
   },
+
+  // ── Content
   content: {
     paddingHorizontal: spacing['2xl'],
-    paddingTop: spacing.sm,
-    paddingBottom: spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing['3xl'],
   },
+
+  // ── Section
   section: {
-    marginBottom: 28,
+    marginBottom: spacing['3xl'],
   },
   sectionTitle: {
-    ...typography.label,
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.label,
+    color: colors.text,
     marginBottom: spacing.xs,
   },
   sectionHint: {
-    ...typography.small,
+    fontFamily: fontFamily.bold,
+    fontSize: 12,
     color: colors.textMuted,
     marginBottom: spacing.sm,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -spacing.xs,
-    marginTop: spacing.xs,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
+
+  // ── TagInput
   tagInputRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -311,93 +353,109 @@ const styles = StyleSheet.create({
   },
   tagInput: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: radii.md,
-    paddingHorizontal: 14,
-    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 13,
     fontFamily: fontFamily.semibold,
-    fontSize: fontSize.label,
+    fontSize: fontSize.body,
     color: colors.text,
     backgroundColor: colors.surface,
   },
-  addButton: {
-    width: 46,
+  addBtn: {
+    width: 50,
+    borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    borderRadius: radii.md,
+    ...shadows.button,
   },
-  addButtonText: {
-    fontSize: 24,
+  addBtnText: {
+    fontFamily: fontFamily.black,
+    fontSize: 26,
     color: colors.onPrimary,
-    lineHeight: 28,
+    lineHeight: 30,
   },
   tagRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: spacing.sm,
-    gap: 6,
+    gap: spacing.sm,
+    marginTop: spacing.md,
   },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primaryGhost,
-    borderRadius: radii.md,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.pill,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
     gap: 6,
   },
   tagText: {
-    ...typography.caption,
+    fontFamily: fontFamily.bold,
+    fontSize: 13,
     color: colors.primaryDeep,
   },
   tagRemove: {
-    fontSize: fontSize.body,
+    fontFamily: fontFamily.bold,
+    fontSize: 16,
     color: colors.textMuted,
     lineHeight: 18,
   },
+
+  // ── Error
   errorText: {
     ...typography.caption,
     color: colors.danger,
     textAlign: 'center',
     marginTop: spacing.sm,
   },
+
+  // ── Footer
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.md,
     paddingHorizontal: spacing['2xl'],
-    paddingVertical: spacing.lg,
-    paddingBottom: spacing['3xl'],
+    paddingTop: spacing.md,
+    paddingBottom: spacing['2xl'],
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    gap: spacing.md,
   },
-  skipButton: {
+  skipBtn: {
     flex: 1,
-    paddingVertical: 14,
+    height: 54,
     borderRadius: radii.pill,
     borderWidth: 1.5,
     borderColor: colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
   },
-  skipButtonText: {
-    ...typography.bodyStrong,
+  skipBtnText: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.body,
     color: colors.textSecondary,
   },
-  nextButton: {
-    flex: 1,
-    paddingVertical: 14,
+  nextBtn: {
+    flex: 2,
+    height: 54,
     borderRadius: radii.pill,
     backgroundColor: colors.primary,
     alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.button,
   },
-  nextButtonDisabled: {
+  nextBtnDisabled: {
     backgroundColor: colors.primaryDisabled,
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  nextButtonText: {
-    ...typography.bodyStrong,
+  nextBtnText: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.body,
     color: colors.onPrimary,
   },
 });

@@ -20,7 +20,7 @@ export default function WelcomeScreen({ navigation }: Props) {
   const greeting = firstName ? `Привет, ${firstName}!` : 'Привет!';
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const slideAnim = useRef(new Animated.Value(28)).current;
   const waveRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       ]),
       { iterations: 3 },
     );
-    const waveTimer = setTimeout(() => waveLoop.start(), 600);
+    const waveTimer = setTimeout(() => waveLoop.start(), 700);
 
     return () => {
       clearTimeout(waveTimer);
@@ -49,7 +49,7 @@ export default function WelcomeScreen({ navigation }: Props) {
 
   const waveInterpolate = waveRotate.interpolate({
     inputRange: [-1, 0, 1],
-    outputRange: ['-20deg', '0deg', '20deg'],
+    outputRange: ['-22deg', '0deg', '22deg'],
   });
 
   return (
@@ -57,6 +57,7 @@ export default function WelcomeScreen({ navigation }: Props) {
       <Animated.View
         style={[styles.container, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
       >
+        {/* Header */}
         <View style={styles.header}>
           <Animated.Text
             style={[styles.wave, { transform: [{ rotate: waveInterpolate }] }]}
@@ -65,10 +66,11 @@ export default function WelcomeScreen({ navigation }: Props) {
           </Animated.Text>
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.sub}>
-            Рады, что ты с нами. Давай вместе разберёмся, что тебе подходит.
+            Рады, что ты с нами. Давай вместе{'\n'}разберёмся, что тебе подходит.
           </Text>
         </View>
 
+        {/* Steps */}
         <View style={styles.stepsSection}>
           <Text style={styles.stepsLabel}>Что тебя ждёт:</Text>
           {STEPS.map((step) => (
@@ -85,10 +87,11 @@ export default function WelcomeScreen({ navigation }: Props) {
           ))}
         </View>
 
+        {/* CTA */}
         <TouchableOpacity
           style={styles.cta}
           onPress={() => navigation.replace('ProfileSetup')}
-          activeOpacity={0.85}
+          activeOpacity={0.82}
         >
           <Text style={styles.ctaText}>Поехали! 🚀</Text>
         </TouchableOpacity>
@@ -105,71 +108,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: spacing.screenH,
-    paddingTop: spacing['3xl'],
+    paddingTop: spacing['2xl'],
     paddingBottom: spacing['2xl'],
     justifyContent: 'space-between',
   },
+
+  // ── Header ──────────────────────────────────────────────────────────────────
   header: {
     alignItems: 'center',
     paddingTop: spacing['2xl'],
+    gap: spacing.sm,
   },
   wave: {
-    fontSize: 56,
-    marginBottom: spacing.md,
+    fontSize: 60,
+    marginBottom: spacing.xs,
+    // transform origin workaround: shift right so rotation pivots from wrist
+    transformOrigin: 'bottom right',
   },
   greeting: {
-    ...typography.h1,
+    fontFamily: fontFamily.black,
+    fontSize: 30,
+    lineHeight: 34,
+    letterSpacing: -0.5,
     color: colors.text,
     textAlign: 'center',
-    marginBottom: spacing.sm,
   },
   sub: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
-    paddingHorizontal: spacing.xl,
+    lineHeight: 22,
   },
+
+  // ── Steps ───────────────────────────────────────────────────────────────────
   stepsSection: {
     flex: 1,
     justifyContent: 'center',
     paddingVertical: spacing['3xl'],
+    gap: spacing.md,
   },
   stepsLabel: {
-    ...typography.caption,
+    fontFamily: fontFamily.bold,
+    fontSize: 11,
     color: colors.textMuted,
-    marginBottom: spacing.md,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 1,
+    marginBottom: spacing.xs,
   },
   stepCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
     borderWidth: 1.5,
     borderColor: colors.border,
     gap: spacing.md,
     ...shadows.card,
   },
   stepBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   stepNum: {
-    ...typography.label,
+    fontFamily: fontFamily.black,
+    fontSize: 15,
     color: colors.primaryDeep,
   },
   stepEmoji: {
-    fontSize: 24,
+    fontSize: 26,
+    flexShrink: 0,
   },
   stepTexts: {
     flex: 1,
+    gap: 2,
   },
   stepLabel: {
     ...typography.bodyStrong,
@@ -178,10 +196,11 @@ const styles = StyleSheet.create({
   stepDesc: {
     ...typography.caption,
     color: colors.textSecondary,
-    marginTop: spacing.xs,
   },
+
+  // ── CTA ─────────────────────────────────────────────────────────────────────
   cta: {
-    height: 56,
+    height: 58,
     backgroundColor: colors.primary,
     borderRadius: radii.pill,
     alignItems: 'center',
@@ -190,7 +209,8 @@ const styles = StyleSheet.create({
   },
   ctaText: {
     fontFamily: fontFamily.extrabold,
-    fontSize: 16,
+    fontSize: 17,
     color: colors.onPrimary,
+    letterSpacing: 0.2,
   },
 });
