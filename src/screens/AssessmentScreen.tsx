@@ -21,19 +21,9 @@ import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
 import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
+import { getAssessmentBlocks } from '../utils/assessmentBlocks';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
-
-const ALL_BLOCKS: AssessmentBlock[] = [
-  'interests',
-  'thinking',
-  'personality',
-  'motivation',
-  'academic',
-  'directions',
-  'goal_clarification',
-  'university',
-];
 
 const BLOCK_NAMES: Record<AssessmentBlock, string> = {
   interests: 'Интересы',
@@ -64,8 +54,7 @@ export default function AssessmentScreen({ navigation }: Props) {
   const advanceBlock = useAssessmentStore((s) => s.advanceBlock);
   const ageGroup = useProfileStore((s) => s.profile?.age_group ?? 'middle');
 
-  const activeBlocks: AssessmentBlock[] =
-    goal === 'university' ? ALL_BLOCKS : ALL_BLOCKS.slice(0, 7);
+  const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const totalBlocks = activeBlocks.length;
 
   const [phase, setPhase] = useState<'loading' | 'intro' | 'question'>('loading');
