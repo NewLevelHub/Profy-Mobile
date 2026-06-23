@@ -82,7 +82,11 @@ export default function ArtifactsSetupScreen({ navigation }: Props) {
     setLoading(true);
     try {
       await saveArtifacts(items);
-      navigation.replace('GoalSelection');
+      navigation.replace('Praise', {
+        title: 'Супер!',
+        subtitle: 'Твои интересы записаны',
+        nextScreen: 'GoalSelection',
+      });
     } catch {
       setSaveError(true);
     } finally {

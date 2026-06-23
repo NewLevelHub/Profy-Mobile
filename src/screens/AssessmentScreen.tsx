@@ -21,42 +21,12 @@ import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
 import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
-import { colors, typography, spacing, radii, fontFamily, fontSize } from '../constants/themes/themes';
+import BlockRoadmap from '../components/common/BlockRoadmap';
+import ConfettiBlast from '../components/common/ConfettiBlast';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
+import { ALL_BLOCKS, BLOCK_NAMES, BLOCK_DESCRIPTIONS } from '../constants/blocks';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
-
-const ALL_BLOCKS: AssessmentBlock[] = [
-  'interests',
-  'thinking',
-  'personality',
-  'motivation',
-  'academic',
-  'directions',
-  'goal_clarification',
-  'university',
-];
-
-const BLOCK_NAMES: Record<AssessmentBlock, string> = {
-  interests: 'Интересы',
-  thinking: 'Стиль мышления',
-  personality: 'Личность',
-  motivation: 'Мотивация',
-  academic: 'Учебные склонности',
-  directions: 'Направления',
-  goal_clarification: 'Твоя цель',
-  university: 'Университет',
-};
-
-const BLOCK_DESCRIPTIONS: Record<AssessmentBlock, string> = {
-  interests: 'Узнаем, что тебя по-настоящему интересует',
-  thinking: 'Разберёмся, как ты думаешь и решаешь задачи',
-  personality: 'Поймём твои сильные стороны характера',
-  motivation: 'Выясним, что тебя вдохновляет и движет',
-  academic: 'Посмотрим, какие предметы тебе ближе всего',
-  directions: 'Определим подходящие профессиональные пути',
-  goal_clarification: 'Уточним твою главную цель',
-  university: 'Подберём университеты под твой профиль',
-};
 
 export default function AssessmentScreen({ navigation }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
@@ -69,7 +39,8 @@ export default function AssessmentScreen({ navigation }: Props) {
     goal === 'university' ? ALL_BLOCKS : ALL_BLOCKS.slice(0, 7);
   const totalBlocks = activeBlocks.length;
 
-  const [phase, setPhase] = useState<'loading' | 'intro' | 'question'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'intro' | 'question' | 'praise'>('loading');
+  const [praiseMessage, setPraiseMessage] = useState<{ title: string; subtitle: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -80,7 +51,10 @@ export default function AssessmentScreen({ navigation }: Props) {
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const introOpacity = useRef(new Animated.Value(0)).current;
+  const praiseScale = useRef(new Animated.Value(0.6)).current;
+  const praiseOpacity = useRef(new Animated.Value(0)).current;
   const introTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const praiseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -141,6 +115,10 @@ export default function AssessmentScreen({ navigation }: Props) {
 
     return () => {
       if (introTimeoutRef.current) clearTimeout(introTimeoutRef.current);
+      if (praiseTimerRef.current !== null) {
+        clearTimeout(praiseTimerRef.current);
+        praiseTimerRef.current = null;
+      }
     };
   }, [currentBlock, loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -181,12 +159,40 @@ export default function AssessmentScreen({ navigation }: Props) {
         block: activeBlocks[currentBlock],
         answers: blockAnswers,
       });
-      advanceBlock();
+      const isLast = currentBlock + 1 >= totalBlocks;
+      const blockName = BLOCK_NAMES[activeBlocks[currentBlock]];
+      setPraiseMessage({
+        title: isLast ? 'Ты справился!' : 'Молодец!',
+        subtitle: isLast ? 'Скоро покажем результат' : `Блок «${blockName}» пройден`,
+      });
+      praiseScale.setValue(0.6);
+      praiseOpacity.setValue(0);
+      setPhase('praise');
+      Animated.parallel([
+        Animated.spring(praiseScale, {
+          toValue: 1,
+          tension: 60,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(praiseOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+      ]).start();
+      praiseTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current) advanceBlock();
+      }, 2500);
     } catch {
       setError('Не удалось сохранить ответы. Попробуй ещё раз.');
     } finally {
       setSaving(false);
     }
+  }
+
+  function handlePraiseContinue() {
+    if (praiseTimerRef.current !== null) {
+      clearTimeout(praiseTimerRef.current);
+      praiseTimerRef.current = null;
+    }
+    advanceBlock();
   }
 
   function handleExit() {
@@ -208,107 +214,139 @@ export default function AssessmentScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.blockCounter}>
-            {`Блок ${currentBlock + 1} из ${totalBlocks}`}
-          </Text>
-          {phase !== 'loading' && (
-            <Text style={styles.blockName} numberOfLines={1}>
-              {BLOCK_NAMES[activeBlocks[currentBlock]]}
-            </Text>
-          )}
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.closeBtn}
-          onPress={handleExit}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Text style={styles.closeBtnText}>{'✕'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {phase === 'loading' && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      )}
-
-      {phase === 'intro' && (
-        <Animated.View style={[styles.center, { opacity: introOpacity }]}>
-          <View style={styles.introBadge}>
-            <Text style={styles.introBadgeText}>{`Блок ${currentBlock + 1}`}</Text>
-          </View>
-          <Text style={styles.introTitle}>
-            {BLOCK_NAMES[activeBlocks[currentBlock]]}
-          </Text>
-          <Text style={styles.introDescription}>
-            {BLOCK_DESCRIPTIONS[activeBlocks[currentBlock]]}
-          </Text>
-        </Animated.View>
-      )}
-
-      {phase === 'question' && (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {error !== null && <Text style={styles.errorText}>{error}</Text>}
-          {error !== null && !currentQuestion && (
-            <TouchableOpacity
-              style={styles.retryBtn}
-              onPress={() => setLoadTrigger((t) => t + 1)}
-              activeOpacity={0.8}
+      {phase === 'praise' && praiseMessage !== null && (
+        <View style={styles.praiseRoot}>
+          <ConfettiBlast />
+          <View style={styles.praiseCenter}>
+            <Animated.View
+              style={[
+                styles.praiseContent,
+                { opacity: praiseOpacity, transform: [{ scale: praiseScale }] },
+              ]}
             >
-              <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
-            </TouchableOpacity>
-          )}
-          {currentQuestion !== undefined && (
-            <Animated.View style={{ opacity: questionOpacity }}>
-              <Text
-                style={[
-                  styles.questionText,
-                  ageGroup === 'junior' && styles.questionTextJunior,
-                ]}
-              >
-                {currentQuestion.text}
+              <Text style={styles.praiseEmoji}>{'⭐'}</Text>
+              <Text style={styles.praiseTitle}>{praiseMessage.title}</Text>
+              <Text style={styles.praiseSubtitle}>{praiseMessage.subtitle}</Text>
+            </Animated.View>
+          </View>
+          <TouchableOpacity
+            style={styles.praiseBtn}
+            onPress={handlePraiseContinue}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.praiseBtnText}>{'Дальше'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {phase !== 'praise' && (
+        <>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.blockCounter}>
+                {`Блок ${currentBlock + 1} из ${totalBlocks}`}
               </Text>
-              <View style={styles.options}>
-                {currentQuestion.options.map((opt) => (
-                  <OptionCard
-                    key={opt.index}
-                    text={opt.text}
-                    index={opt.index}
-                    selected={selectedOptionIndex === opt.index}
-                    ageGroup={ageGroup}
-                    onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
-                  />
-                ))}
-              </View>
-              {showNextButton && (
-                <TouchableOpacity
-                  style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
-                  onPress={handleNextBlock}
-                  disabled={saving}
-                  activeOpacity={0.8}
-                >
-                  {saving ? (
-                    <ActivityIndicator size="small" color={colors.onPrimary} />
-                  ) : (
-                    <Text style={styles.nextBtnText}>
-                      {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+              {phase !== 'loading' && (
+                <Text style={styles.blockName} numberOfLines={1}>
+                  {BLOCK_NAMES[activeBlocks[currentBlock]]}
+                </Text>
               )}
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={handleExit}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={styles.closeBtnText}>{'✕'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.roadmapStrip}>
+            <BlockRoadmap currentBlock={currentBlock} goal={goal} compact />
+          </View>
+
+          {phase === 'loading' && (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          )}
+
+          {phase === 'intro' && (
+            <Animated.View style={[styles.center, { opacity: introOpacity }]}>
+              <View style={styles.introBadge}>
+                <Text style={styles.introBadgeText}>{`Блок ${currentBlock + 1}`}</Text>
+              </View>
+              <Text style={styles.introTitle}>
+                {BLOCK_NAMES[activeBlocks[currentBlock]]}
+              </Text>
+              <Text style={styles.introDescription}>
+                {BLOCK_DESCRIPTIONS[activeBlocks[currentBlock]]}
+              </Text>
             </Animated.View>
           )}
-        </ScrollView>
+
+          {phase === 'question' && (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {error !== null && <Text style={styles.errorText}>{error}</Text>}
+              {error !== null && !currentQuestion && (
+                <TouchableOpacity
+                  style={styles.retryBtn}
+                  onPress={() => setLoadTrigger((t) => t + 1)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
+                </TouchableOpacity>
+              )}
+              {currentQuestion !== undefined && (
+                <Animated.View style={{ opacity: questionOpacity }}>
+                  <Text
+                    style={[
+                      styles.questionText,
+                      ageGroup === 'junior' && styles.questionTextJunior,
+                    ]}
+                  >
+                    {currentQuestion.text}
+                  </Text>
+                  <View style={styles.options}>
+                    {currentQuestion.options.map((opt) => (
+                      <OptionCard
+                        key={opt.index}
+                        text={opt.text}
+                        index={opt.index}
+                        selected={selectedOptionIndex === opt.index}
+                        ageGroup={ageGroup}
+                        onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
+                      />
+                    ))}
+                  </View>
+                  {showNextButton && (
+                    <TouchableOpacity
+                      style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
+                      onPress={handleNextBlock}
+                      disabled={saving}
+                      activeOpacity={0.8}
+                    >
+                      {saving ? (
+                        <ActivityIndicator size="small" color={colors.onPrimary} />
+                      ) : (
+                        <Text style={styles.nextBtnText}>
+                          {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </Animated.View>
+              )}
+            </ScrollView>
+          )}
+        </>
       )}
     </SafeAreaView>
   );
@@ -360,6 +398,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.xs,
+  },
+  roadmapStrip: {
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   closeBtnText: {
     ...typography.caption,
@@ -441,6 +484,48 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   nextBtnText: {
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
+  },
+  praiseRoot: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  praiseCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  praiseContent: {
+    alignItems: 'center',
+    paddingHorizontal: spacing['3xl'],
+  },
+  praiseEmoji: {
+    ...typography.display,
+    fontSize: 72,
+    lineHeight: 88,
+    textAlign: 'center',
+    marginBottom: spacing['2xl'],
+  },
+  praiseTitle: {
+    ...typography.display,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  praiseSubtitle: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  praiseBtn: {
+    marginHorizontal: spacing['3xl'],
+    marginBottom: spacing['3xl'],
+    paddingVertical: spacing.lg,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    ...shadows.button,
+  },
+  praiseBtnText: {
     ...typography.bodyStrong,
     color: colors.onPrimary,
   },

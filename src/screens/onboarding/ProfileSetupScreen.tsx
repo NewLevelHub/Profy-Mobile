@@ -94,7 +94,11 @@ export default function ProfileSetupScreen({ navigation }: Props) {
         subjects_hard: subjectsHard,
       });
       setProfile(profile);
-      navigation.replace('ArtifactsSetup');
+      navigation.replace('Praise', {
+        title: 'Отлично!',
+        subtitle: 'Уже знаем тебя лучше',
+        nextScreen: 'ArtifactsSetup',
+      });
     } catch {
       // network error — stay on screen
     } finally {

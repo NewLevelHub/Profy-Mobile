@@ -14,6 +14,7 @@ import type { AppStackParamList, AssessmentGoal, AssessmentResponse } from '../.
 import { startAssessment, getCurrentAssessment } from '../../api/assessment';
 import { useAssessmentStore } from '../../store/assessmentStore';
 import { useProfileStore } from '../../store/profileStore';
+import BlockRoadmap from '../../components/common/BlockRoadmap';
 import { colors, typography, spacing, radii, shadows } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GoalSelection'>;
@@ -125,6 +126,13 @@ export default function GoalSelectionScreen({ navigation }: Props) {
           Выбери то, что тебе сейчас важнее всего
         </Text>
 
+        <View style={styles.roadmapCard}>
+          <Text style={styles.roadmapHint}>
+            {`Впереди ${ageGroup === 'senior' ? '7–8' : '7'} блоков`}
+          </Text>
+          <BlockRoadmap currentBlock={-1} goal={null} />
+        </View>
+
         {visibleCards.map((card) => (
           <TouchableOpacity
             key={card.title}
@@ -211,7 +219,22 @@ const styles = StyleSheet.create({
   },
   subheading: {
     ...typography.body,
-    marginBottom: spacing['3xl'],
+    marginBottom: spacing['2xl'],
+  },
+  roadmapCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing['2xl'],
+    overflow: 'hidden',
+  },
+  roadmapHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
   },
   card: {
     flexDirection: 'row',
