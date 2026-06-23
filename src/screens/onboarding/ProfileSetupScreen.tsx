@@ -15,7 +15,7 @@ import type { AppStackParamList } from '../../types';
 import { createProfile } from '../../api/profile';
 import { useProfileStore } from '../../store/profileStore';
 import SubjectCard from '../../components/common/SubjectCard';
-import { colors, typography, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProfileSetup'>;
 
@@ -365,8 +365,8 @@ const styles = StyleSheet.create({
   backButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: radii.md,
-    borderWidth: 1,
+    borderRadius: radii.pill,
+    borderWidth: 1.5,
     borderColor: colors.border,
     alignItems: 'center',
   },
@@ -377,12 +377,15 @@ const styles = StyleSheet.create({
   nextButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     backgroundColor: colors.primary,
     alignItems: 'center',
+    ...shadows.button,
   },
   nextButtonDisabled: {
     backgroundColor: colors.primaryDisabled,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   nextButtonText: {
     ...typography.bodyStrong,

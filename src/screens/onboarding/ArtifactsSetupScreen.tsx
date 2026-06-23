@@ -377,8 +377,8 @@ const styles = StyleSheet.create({
   skipButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: radii.md,
-    borderWidth: 1,
+    borderRadius: radii.pill,
+    borderWidth: 1.5,
     borderColor: colors.border,
     alignItems: 'center',
   },
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
   nextButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     backgroundColor: colors.primary,
     alignItems: 'center',
   },

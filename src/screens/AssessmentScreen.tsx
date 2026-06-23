@@ -475,10 +475,11 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     backgroundColor: colors.primary,
-    borderRadius: radii.md,
+    borderRadius: radii.pill,
     paddingVertical: spacing.lg,
     alignItems: 'center',
     marginTop: spacing.lg,
+    ...shadows.button,
   },
   nextBtnDisabled: {
     opacity: 0.7,

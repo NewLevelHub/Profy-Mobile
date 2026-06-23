@@ -4,13 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '../store/authStore';
 import type { AppStackParamList } from '../types';
-import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
+import { colors, typography, spacing, radii, shadows, fontFamily } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Welcome'>;
 
 const STEPS = [
   { num: '1', emoji: '📝', label: 'Расскажи о себе', desc: 'Профиль, интересы и цели' },
-  { num: '2', emoji: '🧩', label: 'Пройди тест', desc: '8 коротких блоков вопросов' },
+  { num: '2', emoji: '🧩', label: 'Пройди тест', desc: '7 коротких блоков вопросов' },
   { num: '3', emoji: '🎯', label: 'Получи план', desc: 'Персональная дорожная карта' },
 ] as const;
 
@@ -21,13 +21,36 @@ export default function WelcomeScreen({ navigation }: Props) {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
+  const waveRotate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 500, useNativeDriver: true }),
     ]).start();
+
+    const waveLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(waveRotate, { toValue: 1, duration: 280, useNativeDriver: true }),
+        Animated.timing(waveRotate, { toValue: -1, duration: 280, useNativeDriver: true }),
+        Animated.timing(waveRotate, { toValue: 1, duration: 280, useNativeDriver: true }),
+        Animated.timing(waveRotate, { toValue: 0, duration: 280, useNativeDriver: true }),
+        Animated.delay(2200),
+      ]),
+      { iterations: 3 },
+    );
+    const waveTimer = setTimeout(() => waveLoop.start(), 600);
+
+    return () => {
+      clearTimeout(waveTimer);
+      waveLoop.stop();
+    };
   }, []);
+
+  const waveInterpolate = waveRotate.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-20deg', '0deg', '20deg'],
+  });
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -35,7 +58,11 @@ export default function WelcomeScreen({ navigation }: Props) {
         style={[styles.container, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
       >
         <View style={styles.header}>
-          <Text style={styles.wave}>👋</Text>
+          <Animated.Text
+            style={[styles.wave, { transform: [{ rotate: waveInterpolate }] }]}
+          >
+            👋
+          </Animated.Text>
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.sub}>
             Рады, что ты с нами. Давай вместе разберёмся, что тебе подходит.
@@ -87,7 +114,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing['2xl'],
   },
   wave: {
-    fontSize: 52,
+    fontSize: 56,
     marginBottom: spacing.md,
   },
   greeting: {
@@ -162,7 +189,8 @@ const styles = StyleSheet.create({
     ...shadows.button,
   },
   ctaText: {
-    ...typography.label,
+    fontFamily: fontFamily.extrabold,
+    fontSize: 16,
     color: colors.onPrimary,
   },
 });

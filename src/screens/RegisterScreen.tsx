@@ -8,13 +8,14 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
 import { registerUser, loginUser } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { AuthStackParamList } from '../types';
-import { colors, typography, spacing, radii, fontFamily, fontSize } from '../constants/themes/themes';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Register'>;
@@ -74,81 +75,153 @@ export default function RegisterScreen({ navigation }: Props) {
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
-        <Text style={styles.title}>Регистрация</Text>
-
-        <View style={styles.field}>
-          <TextInput
-            style={[styles.input, emailError ? styles.inputError : null]}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            autoComplete="email"
-          />
-          {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.brand}>
+          <View style={styles.brandBubble}>
+            <Text style={styles.brandEmoji}>🎯</Text>
+          </View>
+          <Text style={styles.brandName}>Profy</Text>
+          <Text style={styles.brandTagline}>Начни свой путь</Text>
         </View>
 
-        <View style={styles.field}>
-          <TextInput
-            style={[styles.input, passwordError ? styles.inputError : null]}
-            placeholder="Пароль"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="new-password"
-          />
-          {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Регистрация</Text>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={[styles.input, emailError ? styles.inputError : null]}
+              placeholder="your@email.com"
+              placeholderTextColor={colors.textMuted}
+              value={email}
+              onChangeText={(v) => { setEmail(v); setEmailError(''); }}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+            />
+            {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>Пароль</Text>
+            <TextInput
+              style={[styles.input, passwordError ? styles.inputError : null]}
+              placeholder="Минимум 6 символов"
+              placeholderTextColor={colors.textMuted}
+              value={password}
+              onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+            {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+          </View>
+
+          {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+
+          <TouchableOpacity
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={isLoading}
+            activeOpacity={0.85}
+          >
+            {isLoading ? (
+              <ActivityIndicator color={colors.onPrimary} />
+            ) : (
+              <Text style={styles.buttonText}>Создать аккаунт</Text>
+            )}
+          </TouchableOpacity>
         </View>
-
-        {formError ? <Text style={styles.formError}>{formError}</Text> : null}
-
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color={colors.onPrimary} />
-          ) : (
-            <Text style={styles.buttonText}>Зарегистрироваться</Text>
-          )}
-        </TouchableOpacity>
 
         <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.linkText}>Уже есть аккаунт? Войти</Text>
+          <Text style={styles.linkText}>
+            Уже есть аккаунт?{' '}
+            <Text style={styles.linkAccent}>Войти</Text>
+          </Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: {
+  flex: {
     flex: 1,
-    padding: spacing['2xl'],
-    justifyContent: 'center',
     backgroundColor: colors.bg,
   },
-  title: {
-    ...typography.h1,
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: 60,
+    paddingBottom: spacing['3xl'],
+    justifyContent: 'center',
+  },
+  brand: {
+    alignItems: 'center',
     marginBottom: spacing['3xl'],
+  },
+  brandBubble: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  brandEmoji: {
+    fontSize: 32,
+  },
+  brandName: {
+    fontFamily: fontFamily.black,
+    fontSize: 28,
+    color: colors.primary,
+    letterSpacing: -0.5,
+    marginBottom: spacing.xs,
+  },
+  brandTagline: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing['2xl'],
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.card,
+    marginBottom: spacing.xl,
+  },
+  cardTitle: {
+    ...typography.h1,
+    marginBottom: spacing['2xl'],
   },
   field: {
     marginBottom: spacing.lg,
   },
+  label: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
   input: {
-    height: 48,
-    borderWidth: 1,
+    height: 52,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: radii.sm,
-    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
     fontFamily: fontFamily.semibold,
     fontSize: fontSize.body,
     color: colors.text,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
   },
   inputError: {
     borderColor: colors.danger,
@@ -165,26 +238,32 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   button: {
-    height: 48,
+    height: 56,
     backgroundColor: colors.primary,
-    borderRadius: radii.sm,
+    borderRadius: radii.pill,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.sm,
+    ...shadows.button,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    ...typography.bodyStrong,
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.label,
     color: colors.onPrimary,
   },
   link: {
-    marginTop: spacing.lg,
     alignItems: 'center',
+    paddingVertical: spacing.sm,
   },
   linkText: {
     ...typography.caption,
+    color: colors.textSecondary,
+  },
+  linkAccent: {
     color: colors.primary,
+    fontFamily: fontFamily.bold,
   },
 });
