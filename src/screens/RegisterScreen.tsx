@@ -80,22 +80,28 @@ export default function RegisterScreen({ navigation }: Props) {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Brand */}
         <View style={styles.brand}>
-          <View style={styles.brandBubble}>
-            <Text style={styles.brandEmoji}>🎯</Text>
+          <View style={styles.iconWrapper}>
+            <View style={styles.iconBox}>
+              <Text style={styles.iconLetter}>P</Text>
+            </View>
+            <View style={styles.badge}>
+              <Text style={styles.badgeStar}>✦</Text>
+            </View>
           </View>
           <Text style={styles.brandName}>Profy</Text>
-          <Text style={styles.brandTagline}>Начни свой путь</Text>
+          <Text style={styles.brandTagline}>Найди дело, которое тебе по душе</Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Регистрация</Text>
+        {/* Form */}
+        <View style={styles.form}>
+          <Text style={styles.formTitle}>Регистрация</Text>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Email</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
               style={[styles.input, emailError ? styles.inputError : null]}
-              placeholder="your@email.com"
+              placeholder="Электронная почта"
               placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={(v) => { setEmail(v); setEmailError(''); }}
@@ -106,11 +112,10 @@ export default function RegisterScreen({ navigation }: Props) {
             {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
           </View>
 
-          <View style={styles.field}>
-            <Text style={styles.label}>Пароль</Text>
+          <View style={styles.inputWrapper}>
             <TextInput
               style={[styles.input, passwordError ? styles.inputError : null]}
-              placeholder="Минимум 6 символов"
+              placeholder="Пароль"
               placeholderTextColor={colors.textMuted}
               value={password}
               onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
@@ -131,7 +136,7 @@ export default function RegisterScreen({ navigation }: Props) {
             {isLoading ? (
               <ActivityIndicator color={colors.onPrimary} />
             ) : (
-              <Text style={styles.buttonText}>Создать аккаунт</Text>
+              <Text style={styles.buttonText}>Зарегистрироваться</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -155,84 +160,107 @@ const styles = StyleSheet.create({
   scroll: {
     flexGrow: 1,
     paddingHorizontal: spacing['2xl'],
-    paddingTop: 60,
+    paddingTop: 72,
     paddingBottom: spacing['3xl'],
     justifyContent: 'center',
   },
   brand: {
     alignItems: 'center',
-    marginBottom: spacing['3xl'],
+    marginBottom: 40,
   },
-  brandBubble: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.primarySoft,
+  iconWrapper: {
+    marginBottom: spacing.md,
+    position: 'relative',
+  },
+  iconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 22,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.md,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.32,
+    shadowRadius: 18,
+    elevation: 8,
   },
-  brandEmoji: {
-    fontSize: 32,
+  iconLetter: {
+    fontFamily: fontFamily.black,
+    fontSize: 38,
+    color: colors.onPrimary,
+    letterSpacing: -1,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.bg,
+  },
+  badgeStar: {
+    fontSize: 10,
+    color: colors.onPrimary,
   },
   brandName: {
     fontFamily: fontFamily.black,
-    fontSize: 28,
-    color: colors.primary,
+    fontSize: 30,
+    color: colors.text,
     letterSpacing: -0.5,
     marginBottom: spacing.xs,
   },
   brandTagline: {
-    ...typography.caption,
-    color: colors.textMuted,
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: spacing['2xl'],
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.card,
+  form: {
     marginBottom: spacing.xl,
   },
-  cardTitle: {
-    ...typography.h1,
-    marginBottom: spacing['2xl'],
-  },
-  field: {
+  formTitle: {
+    fontFamily: fontFamily.black,
+    fontSize: fontSize.h1,
+    color: colors.text,
     marginBottom: spacing.lg,
   },
-  label: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+  inputWrapper: {
+    marginBottom: spacing.md,
   },
   input: {
-    height: 52,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    height: 56,
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     paddingHorizontal: spacing.lg,
     fontFamily: fontFamily.semibold,
     fontSize: fontSize.body,
     color: colors.text,
-    backgroundColor: colors.bg,
+    shadowColor: '#1E1B4B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   inputError: {
+    borderWidth: 1.5,
     borderColor: colors.danger,
   },
   fieldError: {
-    ...typography.small,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.small,
     marginTop: spacing.xs,
     color: colors.danger,
+    paddingHorizontal: spacing.xs,
   },
   formError: {
-    ...typography.caption,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.caption,
     marginBottom: spacing.md,
     color: colors.danger,
     textAlign: 'center',
@@ -259,11 +287,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   linkText: {
-    ...typography.caption,
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.caption,
     color: colors.textSecondary,
   },
   linkAccent: {
     color: colors.primary,
-    fontFamily: fontFamily.bold,
+    fontFamily: fontFamily.extrabold,
   },
 });
