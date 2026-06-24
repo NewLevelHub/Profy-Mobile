@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { getProfile } from '../api/profile';
 import { RootStackParamList, AuthStackParamList, AppStackParamList } from '../types';
 import SplashScreen from '../screens/SplashScreen';
@@ -19,6 +20,10 @@ import ResultLoadingScreen from '../screens/ResultLoadingScreen';
 import ResultScreen from '../screens/ResultScreen';
 import DirectionDetailScreen from '../screens/DirectionDetailScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
+import UniversityListScreen from '../screens/UniversityListScreen';
+import ProgramDetailScreen from '../screens/ProgramDetailScreen';
+import GapAnalysisScreen from '../screens/GapAnalysisScreen';
+import RoadmapScreen from '../screens/RoadmapScreen';
 import { colors } from '../constants/themes/themes';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -37,6 +42,8 @@ function AuthNavigator() {
 function AppNavigator() {
   const setProfile = useProfileStore((s) => s.setProfile);
   const clearProfile = useProfileStore((s) => s.clearProfile);
+  const logout = useAuthStore((s) => s.logout);
+  const resetAssessment = useAssessmentStore((s) => s.resetAssessment);
   const [initialRoute, setInitialRoute] = useState<keyof AppStackParamList | null>(null);
 
   useEffect(() => {
@@ -45,7 +52,16 @@ function AppNavigator() {
         setProfile(p);
         setInitialRoute('Home');
       })
-      .catch(() => {
+      .catch((err) => {
+        const status = err?.response?.status;
+        if (status === 401) {
+          // Token is invalid or user no longer exists — full logout
+          logout();
+          resetAssessment();
+          clearProfile();
+          // RootNavigator will re-render to AuthStack since token is now null
+          return;
+        }
         clearProfile();
         setInitialRoute('Welcome');
       });
@@ -74,6 +90,10 @@ function AppNavigator() {
       <AppStack.Screen name="ResultLoading" component={ResultLoadingScreen} />
       <AppStack.Screen name="Result" component={ResultScreen} />
       <AppStack.Screen name="DirectionDetail" component={DirectionDetailScreen} />
+      <AppStack.Screen name="UniversityList" component={UniversityListScreen} />
+      <AppStack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
+      <AppStack.Screen name="GapAnalysis" component={GapAnalysisScreen} />
+      <AppStack.Screen name="Roadmap" component={RoadmapScreen} />
     </AppStack.Navigator>
   );
 }

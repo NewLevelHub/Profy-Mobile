@@ -124,33 +124,67 @@ export default function AssessmentScreen({ navigation }: Props) {
     };
   }, [currentBlock, loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function handleBack() {
+    if (questionIndex === 0) return;
+    Animated.timing(questionOpacity, {
+      toValue: 0,
+      duration: 120,
+      useNativeDriver: true,
+    }).start(() => {
+      if (!isMountedRef.current) return;
+      setBlockAnswers((prev) => prev.slice(0, questionIndex - 1));
+      setQuestionIndex((i) => i - 1);
+      setSelectedOptionIndex(null);
+      Animated.timing(questionOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    });
+  }
+
   function handleOptionSelect(questionId: string, optionIndex: number) {
-    if (selectedOptionIndex !== null) return;
+    const isLast = questionIndex === questions.length - 1;
+
+    // On non-last questions: lock after first tap to prevent double-submit during auto-advance
+    if (!isLast && selectedOptionIndex !== null) return;
+
     setSelectedOptionIndex(optionIndex);
+
+    if (isLast) {
+      // Upsert so the user can change their mind before pressing "Next Section"
+      setBlockAnswers((prev) => {
+        const idx = prev.findIndex((a) => a.question_id === questionId);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = { question_id: questionId, selected_option_index: optionIndex };
+          return next;
+        }
+        return [...prev, { question_id: questionId, selected_option_index: optionIndex }];
+      });
+      return;
+    }
+
     setBlockAnswers((prev) => [
       ...prev,
       { question_id: questionId, selected_option_index: optionIndex },
     ]);
-
-    const isLast = questionIndex === questions.length - 1;
-    if (!isLast) {
-      setTimeout(() => {
+    setTimeout(() => {
+      Animated.timing(questionOpacity, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      }).start(() => {
+        if (!isMountedRef.current) return;
+        setQuestionIndex((i) => i + 1);
+        setSelectedOptionIndex(null);
         Animated.timing(questionOpacity, {
-          toValue: 0,
-          duration: 120,
+          toValue: 1,
+          duration: 150,
           useNativeDriver: true,
-        }).start(() => {
-          if (!isMountedRef.current) return;
-          setQuestionIndex((i) => i + 1);
-          setSelectedOptionIndex(null);
-          Animated.timing(questionOpacity, {
-            toValue: 1,
-            duration: 150,
-            useNativeDriver: true,
-          }).start();
-        });
-      }, 300);
-    }
+        }).start();
+      });
+    }, 300);
   }
 
   async function handleNextBlock() {
@@ -244,6 +278,17 @@ export default function AssessmentScreen({ navigation }: Props) {
       {phase !== 'praise' && (
         <>
           <View style={styles.header}>
+            {phase === 'question' && questionIndex > 0 ? (
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={handleBack}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Text style={styles.backBtnText}>{'←'}</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.backBtn} />
+            )}
             <View style={styles.headerLeft}>
               <Text style={styles.blockCounter}>
                 {`Блок ${currentBlock + 1} из ${totalBlocks}`}
@@ -392,6 +437,20 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: colors.primary,
     borderRadius: 3,
+  },
+  backBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.md,
+    backgroundColor: colors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.xs,
+    marginRight: spacing.md,
+  },
+  backBtnText: {
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   closeBtn: {
     width: 32,
