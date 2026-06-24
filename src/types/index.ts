@@ -145,10 +145,6 @@ export interface SaveAnswersResponse {
   scores: Record<string, number>;
 }
 
-export interface ReportResponse {
-  id: string;
-  assessment_id: string;
-}
 
 export interface DirectionResult {
   slug: string;
