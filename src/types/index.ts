@@ -21,6 +21,7 @@ export type AppStackParamList = {
   Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
   ResultLoading: { assessmentId: string };
   Result: undefined;
+  DirectionDetail: { direction: DirectionResult };
 };
 
 export type AssessmentGoal = 'explore' | 'profession' | 'university';
@@ -94,6 +95,30 @@ export interface SaveAnswersResponse {
 export interface ReportResponse {
   id: string;
   assessment_id: string;
+}
+
+export interface DirectionResult {
+  slug: string;
+  name: string;
+  match_score: number;
+  why_it_fits: string;
+  description: string;
+  professions: string[];
+  skills_needed: string[];
+  subjects_to_develop: string[];
+  first_steps: string[];
+}
+
+export interface AnalysisResultResponse {
+  id: string;
+  assessment_id: string;
+  summary: string;
+  strengths: string[];
+  interests_map: Record<string, number>;
+  thinking_style: Record<string, number>;
+  motivation: string[];
+  directions: DirectionResult[];
+  created_at: string;
 }
 
 export interface ProfilePayload {
