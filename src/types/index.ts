@@ -9,12 +9,16 @@ export type AuthStackParamList = {
   Register: undefined;
 };
 
+export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'Home';
+
 export type AppStackParamList = {
+  Welcome: undefined;
   ProfileSetup: undefined;
   ArtifactsSetup: undefined;
   GoalSelection: undefined;
   Assessment: undefined;
   Home: undefined;
+  Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
 };
 
 export type AssessmentGoal = 'explore' | 'profession' | 'university';

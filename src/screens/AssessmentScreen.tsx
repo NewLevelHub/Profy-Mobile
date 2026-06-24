@@ -21,6 +21,13 @@ import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
 import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
+import BlockRoadmap from '../components/common/BlockRoadmap';
+import ConfettiBlast from '../components/common/ConfettiBlast';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
+import { ALL_BLOCKS, BLOCK_NAMES, BLOCK_DESCRIPTIONS } from '../constants/blocks';
+
+type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
+
 import { getAssessmentBlocks } from '../utils/assessmentBlocks';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
@@ -57,7 +64,8 @@ export default function AssessmentScreen({ navigation }: Props) {
   const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const totalBlocks = activeBlocks.length;
 
-  const [phase, setPhase] = useState<'loading' | 'intro' | 'question'>('loading');
+  const [phase, setPhase] = useState<'loading' | 'intro' | 'question' | 'praise'>('loading');
+  const [praiseMessage, setPraiseMessage] = useState<{ title: string; subtitle: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState<number | null>(null);
@@ -68,7 +76,10 @@ export default function AssessmentScreen({ navigation }: Props) {
 
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const introOpacity = useRef(new Animated.Value(0)).current;
+  const praiseScale = useRef(new Animated.Value(0.6)).current;
+  const praiseOpacity = useRef(new Animated.Value(0)).current;
   const introTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const praiseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
 
   useEffect(() => {
@@ -129,6 +140,10 @@ export default function AssessmentScreen({ navigation }: Props) {
 
     return () => {
       if (introTimeoutRef.current) clearTimeout(introTimeoutRef.current);
+      if (praiseTimerRef.current !== null) {
+        clearTimeout(praiseTimerRef.current);
+        praiseTimerRef.current = null;
+      }
     };
   }, [currentBlock, loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -169,12 +184,40 @@ export default function AssessmentScreen({ navigation }: Props) {
         block: activeBlocks[currentBlock],
         answers: blockAnswers,
       });
-      advanceBlock();
+      const isLast = currentBlock + 1 >= totalBlocks;
+      const blockName = BLOCK_NAMES[activeBlocks[currentBlock]];
+      setPraiseMessage({
+        title: isLast ? 'Ты справился!' : 'Молодец!',
+        subtitle: isLast ? 'Скоро покажем результат' : `Блок «${blockName}» пройден`,
+      });
+      praiseScale.setValue(0.6);
+      praiseOpacity.setValue(0);
+      setPhase('praise');
+      Animated.parallel([
+        Animated.spring(praiseScale, {
+          toValue: 1,
+          tension: 60,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(praiseOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
+      ]).start();
+      praiseTimerRef.current = setTimeout(() => {
+        if (isMountedRef.current) advanceBlock();
+      }, 2500);
     } catch {
       setError('Не удалось сохранить ответы. Попробуй ещё раз.');
     } finally {
       setSaving(false);
     }
+  }
+
+  function handlePraiseContinue() {
+    if (praiseTimerRef.current !== null) {
+      clearTimeout(praiseTimerRef.current);
+      praiseTimerRef.current = null;
+    }
+    advanceBlock();
   }
 
   function handleExit() {
@@ -196,107 +239,139 @@ export default function AssessmentScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.blockCounter}>
-            {`Блок ${currentBlock + 1} из ${totalBlocks}`}
-          </Text>
-          {phase !== 'loading' && (
-            <Text style={styles.blockName} numberOfLines={1}>
-              {BLOCK_NAMES[activeBlocks[currentBlock]]}
-            </Text>
-          )}
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.closeBtn}
-          onPress={handleExit}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-        >
-          <Text style={styles.closeBtnText}>{'✕'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {phase === 'loading' && (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color="#4F46E5" />
-        </View>
-      )}
-
-      {phase === 'intro' && (
-        <Animated.View style={[styles.center, { opacity: introOpacity }]}>
-          <View style={styles.introBadge}>
-            <Text style={styles.introBadgeText}>{`Блок ${currentBlock + 1}`}</Text>
-          </View>
-          <Text style={styles.introTitle}>
-            {BLOCK_NAMES[activeBlocks[currentBlock]]}
-          </Text>
-          <Text style={styles.introDescription}>
-            {BLOCK_DESCRIPTIONS[activeBlocks[currentBlock]]}
-          </Text>
-        </Animated.View>
-      )}
-
-      {phase === 'question' && (
-        <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {error !== null && <Text style={styles.errorText}>{error}</Text>}
-          {error !== null && !currentQuestion && (
-            <TouchableOpacity
-              style={styles.retryBtn}
-              onPress={() => setLoadTrigger((t) => t + 1)}
-              activeOpacity={0.8}
+      {phase === 'praise' && praiseMessage !== null && (
+        <View style={styles.praiseRoot}>
+          <ConfettiBlast />
+          <View style={styles.praiseCenter}>
+            <Animated.View
+              style={[
+                styles.praiseContent,
+                { opacity: praiseOpacity, transform: [{ scale: praiseScale }] },
+              ]}
             >
-              <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
-            </TouchableOpacity>
-          )}
-          {currentQuestion !== undefined && (
-            <Animated.View style={{ opacity: questionOpacity }}>
-              <Text
-                style={[
-                  styles.questionText,
-                  ageGroup === 'junior' && styles.questionTextJunior,
-                ]}
-              >
-                {currentQuestion.text}
+              <Text style={styles.praiseEmoji}>{'⭐'}</Text>
+              <Text style={styles.praiseTitle}>{praiseMessage.title}</Text>
+              <Text style={styles.praiseSubtitle}>{praiseMessage.subtitle}</Text>
+            </Animated.View>
+          </View>
+          <TouchableOpacity
+            style={styles.praiseBtn}
+            onPress={handlePraiseContinue}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.praiseBtnText}>{'Дальше'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {phase !== 'praise' && (
+        <>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.blockCounter}>
+                {`Блок ${currentBlock + 1} из ${totalBlocks}`}
               </Text>
-              <View style={styles.options}>
-                {currentQuestion.options.map((opt) => (
-                  <OptionCard
-                    key={opt.index}
-                    text={opt.text}
-                    index={opt.index}
-                    selected={selectedOptionIndex === opt.index}
-                    ageGroup={ageGroup}
-                    onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
-                  />
-                ))}
-              </View>
-              {showNextButton && (
-                <TouchableOpacity
-                  style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
-                  onPress={handleNextBlock}
-                  disabled={saving}
-                  activeOpacity={0.8}
-                >
-                  {saving ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text style={styles.nextBtnText}>
-                      {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+              {phase !== 'loading' && (
+                <Text style={styles.blockName} numberOfLines={1}>
+                  {BLOCK_NAMES[activeBlocks[currentBlock]]}
+                </Text>
               )}
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+              </View>
+            </View>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={handleExit}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={styles.closeBtnText}>{'✕'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.roadmapStrip}>
+            <BlockRoadmap currentBlock={currentBlock} goal={goal} compact />
+          </View>
+
+          {phase === 'loading' && (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          )}
+
+          {phase === 'intro' && (
+            <Animated.View style={[styles.center, { opacity: introOpacity }]}>
+              <View style={styles.introBadge}>
+                <Text style={styles.introBadgeText}>{`Блок ${currentBlock + 1}`}</Text>
+              </View>
+              <Text style={styles.introTitle}>
+                {BLOCK_NAMES[activeBlocks[currentBlock]]}
+              </Text>
+              <Text style={styles.introDescription}>
+                {BLOCK_DESCRIPTIONS[activeBlocks[currentBlock]]}
+              </Text>
             </Animated.View>
           )}
-        </ScrollView>
+
+          {phase === 'question' && (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {error !== null && <Text style={styles.errorText}>{error}</Text>}
+              {error !== null && !currentQuestion && (
+                <TouchableOpacity
+                  style={styles.retryBtn}
+                  onPress={() => setLoadTrigger((t) => t + 1)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
+                </TouchableOpacity>
+              )}
+              {currentQuestion !== undefined && (
+                <Animated.View style={{ opacity: questionOpacity }}>
+                  <Text
+                    style={[
+                      styles.questionText,
+                      ageGroup === 'junior' && styles.questionTextJunior,
+                    ]}
+                  >
+                    {currentQuestion.text}
+                  </Text>
+                  <View style={styles.options}>
+                    {currentQuestion.options.map((opt) => (
+                      <OptionCard
+                        key={opt.index}
+                        text={opt.text}
+                        index={opt.index}
+                        selected={selectedOptionIndex === opt.index}
+                        ageGroup={ageGroup}
+                        onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
+                      />
+                    ))}
+                  </View>
+                  {showNextButton && (
+                    <TouchableOpacity
+                      style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
+                      onPress={handleNextBlock}
+                      disabled={saving}
+                      activeOpacity={0.8}
+                    >
+                      {saving ? (
+                        <ActivityIndicator size="small" color={colors.onPrimary} />
+                      ) : (
+                        <Text style={styles.nextBtnText}>
+                          {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </Animated.View>
+              )}
+            </ScrollView>
+          )}
+        </>
       )}
     </SafeAreaView>
   );
@@ -305,142 +380,179 @@ export default function AssessmentScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.bg,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   headerLeft: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   blockCounter: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
+    ...typography.small,
     marginBottom: 2,
   },
   blockName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 8,
+    ...typography.label,
+    marginBottom: spacing.sm,
   },
   progressTrack: {
     height: 6,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: colors.track,
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: 6,
-    backgroundColor: '#4F46E5',
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   closeBtn: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F3F4F6',
+    borderRadius: radii.md,
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
+  },
+  roadmapStrip: {
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   closeBtnText: {
-    fontSize: 14,
-    color: '#6B7280',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.textSecondary,
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
+    padding: spacing['3xl'],
   },
   introBadge: {
-    backgroundColor: '#EEF2FF',
-    borderRadius: 20,
-    paddingHorizontal: 16,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 6,
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   introBadgeText: {
-    color: '#4F46E5',
-    fontSize: 13,
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.primaryDeep,
   },
   introTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
+    ...typography.h1,
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   introDescription: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...typography.body,
     textAlign: 'center',
-    lineHeight: 24,
   },
   scroll: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
+    padding: spacing['2xl'],
     paddingBottom: 40,
   },
   errorText: {
-    fontSize: 14,
-    color: '#EF4444',
-    marginBottom: 12,
+    ...typography.caption,
+    color: colors.danger,
+    marginBottom: spacing.md,
     textAlign: 'center',
   },
   retryBtn: {
     alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: '#EEF2FF',
-    marginBottom: 24,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    borderRadius: radii.sm,
+    backgroundColor: colors.primarySoft,
+    marginBottom: spacing['2xl'],
   },
   retryBtnText: {
-    fontSize: 14,
-    color: '#4F46E5',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.primaryDeep,
   },
   questionText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#111827',
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.subtitle,
+    color: colors.text,
     lineHeight: 28,
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
   questionTextJunior: {
     fontSize: 24,
     lineHeight: 34,
   },
   options: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   nextBtn: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 14,
-    paddingVertical: 16,
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.lg,
+    ...shadows.button,
   },
   nextBtnDisabled: {
     opacity: 0.7,
   },
   nextBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
+  },
+  praiseRoot: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  praiseCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  praiseContent: {
+    alignItems: 'center',
+    paddingHorizontal: spacing['3xl'],
+  },
+  praiseEmoji: {
+    ...typography.display,
+    fontSize: 72,
+    lineHeight: 88,
+    textAlign: 'center',
+    marginBottom: spacing['2xl'],
+  },
+  praiseTitle: {
+    ...typography.display,
+    textAlign: 'center',
+    marginBottom: spacing.md,
+  },
+  praiseSubtitle: {
+    ...typography.body,
+    textAlign: 'center',
+  },
+  praiseBtn: {
+    marginHorizontal: spacing['3xl'],
+    marginBottom: spacing['3xl'],
+    paddingVertical: spacing.lg,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    ...shadows.button,
+  },
+  praiseBtnText: {
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
   },
 });

@@ -10,28 +10,20 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../types';
 import { createProfile } from '../../api/profile';
 import { useProfileStore } from '../../store/profileStore';
 import SubjectCard from '../../components/common/SubjectCard';
+import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProfileSetup'>;
 
 const SUBJECTS = [
-  'Математика',
-  'Физика',
-  'Химия',
-  'Биология',
-  'История',
-  'География',
-  'Русский язык',
-  'Литература',
-  'Английский язык',
-  'Информатика',
-  'Физкультура',
-  'Рисование',
-  'Музыка',
+  'Математика', 'Физика', 'Химия', 'Биология',
+  'История', 'География', 'Русский язык', 'Литература',
+  'Английский язык', 'Информатика', 'Физкультура', 'Рисование', 'Музыка',
 ];
 
 type Errors = Partial<Record<'name' | 'age' | 'grade', string>>;
@@ -93,7 +85,11 @@ export default function ProfileSetupScreen({ navigation }: Props) {
         subjects_hard: subjectsHard,
       });
       setProfile(profile);
-      navigation.replace('ArtifactsSetup');
+      navigation.replace('Praise', {
+        title: 'Отлично!',
+        subtitle: 'Уже знаем тебя лучше',
+        nextScreen: 'ArtifactsSetup',
+      });
     } catch {
       // network error — stay on screen
     } finally {
@@ -101,167 +97,184 @@ export default function ProfileSetupScreen({ navigation }: Props) {
     }
   }
 
-  const progress = step / 3;
+  const TOTAL_STEPS = 3;
+  const progress = step / TOTAL_STEPS;
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+
+        {/* ── Progress header ───────────────────────────────────────────── */}
+        <View style={styles.header}>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+          </View>
+          <Text style={styles.stepIndicator}>Шаг {step} из {TOTAL_STEPS}</Text>
         </View>
-        <Text style={styles.stepLabel}>Шаг {step} из 3</Text>
-      </View>
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {step === 1 && (
-          <View>
-            <Text style={styles.title}>Расскажи о себе</Text>
-            <Text style={styles.subtitle}>Нам нужно немного узнать тебя</Text>
+        {/* ── Scrollable content ────────────────────────────────────────── */}
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {step === 1 && (
+            <View>
+              <Text style={styles.title}>Расскажи о себе</Text>
+              <Text style={styles.subtitle}>Нам нужно немного узнать тебя</Text>
 
-            <Text style={styles.label}>Имя</Text>
-            <TextInput
-              style={[styles.input, errors.name ? styles.inputError : null]}
-              value={name}
-              onChangeText={(v) => { setName(v); setErrors((e) => ({ ...e, name: undefined })); }}
-              placeholder="Например, Арман"
-              placeholderTextColor="#9CA3AF"
-              autoFocus
-            />
-            {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
+              <Field label="Имя" error={errors.name}>
+                <TextInput
+                  style={[styles.input, errors.name ? styles.inputError : null]}
+                  value={name}
+                  onChangeText={(v) => { setName(v); setErrors((e) => ({ ...e, name: undefined })); }}
+                  placeholder="Например, Арман"
+                  placeholderTextColor={colors.textMuted}
+                  autoFocus
+                  returnKeyType="next"
+                />
+              </Field>
 
-            <Text style={styles.label}>Возраст</Text>
-            <TextInput
-              style={[styles.input, errors.age ? styles.inputError : null]}
-              value={age}
-              onChangeText={(v) => { setAge(v); setErrors((e) => ({ ...e, age: undefined })); }}
-              placeholder="от 6 до 18"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="number-pad"
-              maxLength={2}
-            />
-            {errors.age ? <Text style={styles.errorText}>{errors.age}</Text> : null}
+              <Field label="Возраст" error={errors.age}>
+                <TextInput
+                  style={[styles.input, errors.age ? styles.inputError : null]}
+                  value={age}
+                  onChangeText={(v) => { setAge(v); setErrors((e) => ({ ...e, age: undefined })); }}
+                  placeholder="от 6 до 18"
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </Field>
 
-            <Text style={styles.label}>Класс</Text>
-            <TextInput
-              style={[styles.input, errors.grade ? styles.inputError : null]}
-              value={grade}
-              onChangeText={(v) => { setGrade(v); setErrors((e) => ({ ...e, grade: undefined })); }}
-              placeholder="от 1 до 12"
-              placeholderTextColor="#9CA3AF"
-              keyboardType="number-pad"
-              maxLength={2}
-            />
-            {errors.grade ? <Text style={styles.errorText}>{errors.grade}</Text> : null}
-          </View>
-        )}
+              <Field label="Класс" error={errors.grade}>
+                <TextInput
+                  style={[styles.input, errors.grade ? styles.inputError : null]}
+                  value={grade}
+                  onChangeText={(v) => { setGrade(v); setErrors((e) => ({ ...e, grade: undefined })); }}
+                  placeholder="от 1 до 12"
+                  placeholderTextColor={colors.textMuted}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                />
+              </Field>
+            </View>
+          )}
 
-        {step === 2 && (
-          <View>
-            <Text style={styles.title}>Где ты живёшь?</Text>
-            <Text style={styles.subtitle}>Это поможет нам подобрать университеты и олимпиады</Text>
+          {step === 2 && (
+            <View>
+              <Text style={styles.title}>Где ты живёшь?</Text>
+              <Text style={styles.subtitle}>Поможет подобрать университеты и олимпиады</Text>
 
-            <Text style={styles.label}>Город</Text>
-            <TextInput
-              style={styles.input}
-              value={city}
-              onChangeText={setCity}
-              placeholder="Например, Алматы"
-              placeholderTextColor="#9CA3AF"
-              autoFocus
-            />
+              <Field label="Город">
+                <TextInput
+                  style={styles.input}
+                  value={city}
+                  onChangeText={setCity}
+                  placeholder="Например, Алматы"
+                  placeholderTextColor={colors.textMuted}
+                  autoFocus
+                  returnKeyType="next"
+                />
+              </Field>
 
-            <Text style={styles.label}>Страна</Text>
-            <TextInput
-              style={styles.input}
-              value={country}
-              onChangeText={setCountry}
-              placeholder="Например, Казахстан"
-              placeholderTextColor="#9CA3AF"
-            />
+              <Field label="Страна">
+                <TextInput
+                  style={styles.input}
+                  value={country}
+                  onChangeText={setCountry}
+                  placeholder="Например, Казахстан"
+                  placeholderTextColor={colors.textMuted}
+                  returnKeyType="next"
+                />
+              </Field>
 
-            <Text style={styles.label}>Язык обучения</Text>
-            <TextInput
-              style={styles.input}
-              value={language}
-              onChangeText={setLanguage}
-              placeholder="Русский / Казахский / Английский"
-              placeholderTextColor="#9CA3AF"
-            />
-          </View>
-        )}
+              <Field label="Язык обучения">
+                <TextInput
+                  style={styles.input}
+                  value={language}
+                  onChangeText={setLanguage}
+                  placeholder="Русский / Казахский / Английский"
+                  placeholderTextColor={colors.textMuted}
+                />
+              </Field>
+            </View>
+          )}
 
-        {step === 3 && (
-          <View>
-            <Text style={styles.title}>Школьные предметы</Text>
-            <Text style={styles.subtitle}>Можно выбрать несколько в каждой группе</Text>
+          {step === 3 && (
+            <View>
+              <Text style={styles.title}>Школьные предметы</Text>
+              <Text style={styles.subtitle}>Можно выбрать несколько в каждой группе</Text>
 
-            <SubjectSection
-              title="Нравятся"
-              selected={subjectsLike}
-              onToggle={(s) => setSubjectsLike((prev) => toggle(prev, s))}
-            />
-            <SubjectSection
-              title="Не нравятся"
-              selected={subjectsDislike}
-              onToggle={(s) => setSubjectsDislike((prev) => toggle(prev, s))}
-            />
-            <SubjectSection
-              title="Даются легко"
-              selected={subjectsEasy}
-              onToggle={(s) => setSubjectsEasy((prev) => toggle(prev, s))}
-            />
-            <SubjectSection
-              title="Даются сложно"
-              selected={subjectsHard}
-              onToggle={(s) => setSubjectsHard((prev) => toggle(prev, s))}
-            />
-          </View>
-        )}
-      </ScrollView>
+              <SubjectSection title="Нравятся" emoji="❤️" selected={subjectsLike}
+                onToggle={(s) => setSubjectsLike((prev) => toggle(prev, s))} />
+              <SubjectSection title="Не нравятся" emoji="😕" selected={subjectsDislike}
+                onToggle={(s) => setSubjectsDislike((prev) => toggle(prev, s))} />
+              <SubjectSection title="Даются легко" emoji="✅" selected={subjectsEasy}
+                onToggle={(s) => setSubjectsEasy((prev) => toggle(prev, s))} />
+              <SubjectSection title="Даются сложно" emoji="🤯" selected={subjectsHard}
+                onToggle={(s) => setSubjectsHard((prev) => toggle(prev, s))} />
+            </View>
+          )}
+        </ScrollView>
 
-      <View style={styles.footer}>
-        {step > 1 ? (
-          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-            <Text style={styles.backButtonText}>Назад</Text>
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.flex} />
-        )}
+        {/* ── Footer ───────────────────────────────────────────────────── */}
+        <View style={styles.footer}>
+          {step > 1 && (
+            <TouchableOpacity style={styles.backBtn} onPress={handleBack} activeOpacity={0.75}>
+              <Text style={styles.backBtnText}>Назад</Text>
+            </TouchableOpacity>
+          )}
 
-        {step < 3 ? (
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <Text style={styles.nextButtonText}>Далее</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.nextButton, loading && styles.nextButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.nextButtonText}>Готово</Text>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
-    </KeyboardAvoidingView>
+          {step < TOTAL_STEPS ? (
+            <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85}>
+              <Text style={styles.nextBtnText}>Далее</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.nextBtn, loading && styles.nextBtnDisabled]}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              {loading
+                ? <ActivityIndicator color={colors.onPrimary} />
+                : <Text style={styles.nextBtnText}>Готово ✓</Text>
+              }
+            </TouchableOpacity>
+          )}
+        </View>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function Field({
+  label, error, children,
+}: {
+  label: string; error?: string; children: React.ReactNode;
+}) {
+  return (
+    <View style={styles.fieldWrap}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      {children}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
   );
 }
 
 function SubjectSection({
-  title,
-  selected,
-  onToggle,
+  title, emoji, selected, onToggle,
 }: {
-  title: string;
-  selected: string[];
-  onToggle: (subject: string) => void;
+  title: string; emoji: string; selected: string[]; onToggle: (s: string) => void;
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={styles.sectionTitle}>{emoji}  {title}</Text>
       <View style={styles.chipRow}>
         {SUBJECTS.map((s) => (
           <SubjectCard key={s} label={s} selected={selected.includes(s)} onPress={() => onToggle(s)} />
@@ -271,125 +284,157 @@ function SubjectSection({
   );
 }
 
+// ── Styles ───────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
   flex: {
     flex: 1,
-    backgroundColor: '#fff',
   },
+  scroll: {
+    flex: 1,
+  },
+
+  // ── Header / progress
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 56,
-    paddingBottom: 8,
-    backgroundColor: '#fff',
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.bg,
   },
   progressTrack: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#E5E7EB',
+    height: 5,
+    borderRadius: radii.pill,
+    backgroundColor: colors.track,
     overflow: 'hidden',
   },
   progressFill: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#4F46E5',
+    height: 5,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
   },
-  stepLabel: {
-    marginTop: 8,
+  stepIndicator: {
+    fontFamily: fontFamily.bold,
     fontSize: 12,
-    color: '#6B7280',
+    color: colors.textMuted,
+    marginTop: spacing.sm,
   },
+
+  // ── Content
   content: {
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 24,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing['3xl'],
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 6,
+    fontFamily: fontFamily.black,
+    fontSize: 27,
+    lineHeight: 30,
+    letterSpacing: -0.5,
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 28,
+    ...typography.body,
+    color: colors.textSecondary,
+    marginBottom: spacing['3xl'],
   },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 6,
-    marginTop: 16,
+
+  // ── Field
+  fieldWrap: {
+    marginBottom: spacing.lg,
+  },
+  fieldLabel: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: 13,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827',
-    backgroundColor: '#F9FAFB',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 15,
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.body,
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   inputError: {
-    borderColor: '#EF4444',
+    borderColor: colors.danger,
+    borderWidth: 1.5,
   },
   errorText: {
-    marginTop: 4,
+    fontFamily: fontFamily.bold,
     fontSize: 12,
-    color: '#EF4444',
+    color: colors.danger,
+    marginTop: spacing.xs,
   },
+
+  // ── Subjects step
   section: {
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.label,
+    color: colors.text,
+    marginBottom: spacing.md,
   },
   chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -4,
+    gap: spacing.sm,
   },
+
+  // ── Footer
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    paddingBottom: 32,
-    backgroundColor: '#fff',
+    gap: spacing.md,
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing.md,
+    paddingBottom: spacing['2xl'],
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
-    gap: 12,
+    borderTopColor: colors.border,
   },
-  backButton: {
+  backBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
+    height: 54,
+    borderRadius: radii.pill,
+    borderWidth: 1.5,
+    borderColor: colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
   },
-  backButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
+  backBtnText: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.body,
+    color: colors.textSecondary,
   },
-  nextButton: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#4F46E5',
+  nextBtn: {
+    flex: 2,
+    height: 54,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
     alignItems: 'center',
+    justifyContent: 'center',
+    ...shadows.button,
   },
-  nextButtonDisabled: {
-    backgroundColor: '#A5B4FC',
+  nextBtnDisabled: {
+    backgroundColor: colors.primaryDisabled,
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  nextButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+  nextBtnText: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: fontSize.body,
+    color: colors.onPrimary,
   },
 });

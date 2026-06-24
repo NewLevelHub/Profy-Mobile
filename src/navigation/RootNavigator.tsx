@@ -14,6 +14,9 @@ import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
 import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
 import AssessmentScreen from '../screens/AssessmentScreen';
+import PraiseScreen from '../screens/PraiseScreen';
+import WelcomeScreen from '../screens/WelcomeScreen';
+import { colors } from '../constants/themes/themes';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -41,14 +44,14 @@ function AppNavigator() {
       })
       .catch(() => {
         clearProfile();
-        setInitialRoute('ProfileSetup');
+        setInitialRoute('Welcome');
       });
   }, []);
 
   if (initialRoute === null) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -58,10 +61,12 @@ function AppNavigator() {
       screenOptions={{ headerShown: false }}
       initialRouteName={initialRoute}
     >
+      <AppStack.Screen name="Welcome" component={WelcomeScreen} />
       <AppStack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
       <AppStack.Screen name="ArtifactsSetup" component={ArtifactsSetupScreen} />
       <AppStack.Screen name="GoalSelection" component={GoalSelectionScreen} />
       <AppStack.Screen name="Assessment" component={AssessmentScreen} />
+      <AppStack.Screen name="Praise" component={PraiseScreen} />
       <AppStack.Screen name="Home" component={HomeScreen} />
     </AppStack.Navigator>
   );
@@ -89,6 +94,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.bg,
   },
 });

@@ -5,6 +5,7 @@ description: >
   any new screen, component, hook, store, or API module. Enforces one-component-
   per-file rule, folder layout, naming conventions, and React Native / Expo
   best practices. Also contains full product context from the ТЗ.
+  For all styling decisions (colors, typography, spacing, shadows) read design.md.
 ---
 
 # Role
@@ -124,6 +125,8 @@ The final output is never "you should be a doctor". It is always a full map:
 | Icons       | react-native-vector-icons ^10.3.0       |
 
 **Always read https://docs.expo.dev/versions/v56.0.0/ before writing Expo-specific code.**
+
+> **Стили, цвета, шрифты, отступы, тени** — читай `design.md`. Здесь только структура и код.
 
 ---
 
@@ -370,3 +373,4 @@ Before finishing any task, verify:
 - [ ] New files placed in the correct `src/` sub-folder
 - [ ] File names follow the naming table above
 - [ ] Feature is within **MVP scope** (no parent role, no gamification, no marketplace, no chats)
+- [ ] Все стили соответствуют Design Tokens Checklist из `design.md`

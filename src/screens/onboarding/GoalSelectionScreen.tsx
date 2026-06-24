@@ -14,6 +14,8 @@ import type { AppStackParamList, AssessmentGoal, AssessmentResponse } from '../.
 import { startAssessment, getCurrentAssessment } from '../../api/assessment';
 import { useAssessmentStore } from '../../store/assessmentStore';
 import { useProfileStore } from '../../store/profileStore';
+import BlockRoadmap from '../../components/common/BlockRoadmap';
+import { colors, typography, spacing, radii, shadows } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GoalSelection'>;
 
@@ -108,7 +110,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
   if (loading) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -123,6 +125,13 @@ export default function GoalSelectionScreen({ navigation }: Props) {
         <Text style={styles.subheading}>
           Выбери то, что тебе сейчас важнее всего
         </Text>
+
+        <View style={styles.roadmapCard}>
+          <Text style={styles.roadmapHint}>
+            {`Впереди ${ageGroup === 'senior' ? '7–8' : '7'} блоков`}
+          </Text>
+          <BlockRoadmap currentBlock={-1} goal={null} />
+        </View>
 
         {visibleCards.map((card) => (
           <TouchableOpacity
@@ -146,7 +155,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
         {cardLoading && (
           <ActivityIndicator
             size="small"
-            color="#4F46E5"
+            color={colors.primary}
             style={styles.cardLoader}
           />
         )}
@@ -192,48 +201,55 @@ export default function GoalSelectionScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.bg,
   },
   loader: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.bg,
   },
   scroll: {
-    padding: 24,
+    padding: spacing['2xl'],
     paddingTop: 48,
   },
   heading: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
+    ...typography.h1,
+    marginBottom: spacing.sm,
   },
   subheading: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginBottom: 32,
-    lineHeight: 22,
+    ...typography.body,
+    marginBottom: spacing['2xl'],
+  },
+  roadmapCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing['2xl'],
+    overflow: 'hidden',
+  },
+  roadmapHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xs,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    ...shadows.card,
   },
   cardIconWrap: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: '#EEF2FF',
+    borderRadius: radii.sm,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -242,85 +258,75 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: spacing.lg,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    ...typography.bodyStrong,
   },
   cardSubtitle: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 4,
-    lineHeight: 18,
+    ...typography.caption,
+    marginTop: spacing.xs,
   },
   cardArrow: {
     fontSize: 24,
-    color: '#9CA3AF',
-    marginLeft: 8,
+    color: colors.textMuted,
+    marginLeft: spacing.sm,
   },
   cardLoader: {
-    marginTop: 16,
+    marginTop: spacing.lg,
   },
   error: {
-    marginTop: 16,
-    fontSize: 14,
-    color: '#EF4444',
+    ...typography.caption,
+    marginTop: spacing.lg,
+    color: colors.danger,
     textAlign: 'center',
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    padding: spacing['2xl'],
   },
   dialog: {
     width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    padding: spacing['2xl'],
   },
   dialogTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-    marginBottom: 12,
+    ...typography.subtitle,
+    marginBottom: spacing.md,
   },
   dialogBody: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 24,
+    ...typography.body,
+    marginBottom: spacing['2xl'],
   },
   dialogActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
   },
   btnOutline: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderColor: colors.border,
+    borderRadius: radii.sm,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   btnOutlineText: {
-    fontSize: 14,
-    color: '#4F46E5',
-    fontWeight: '500',
+    ...typography.caption,
+    color: colors.primary,
   },
   btnPrimary: {
     flex: 1,
-    backgroundColor: '#4F46E5',
-    borderRadius: 10,
-    paddingVertical: 12,
+    backgroundColor: colors.primary,
+    borderRadius: radii.sm,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   btnPrimaryText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '600',
+    ...typography.caption,
+    color: colors.onPrimary,
   },
 });
