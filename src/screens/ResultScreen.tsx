@@ -10,6 +10,8 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, DirectionResult } from '../types';
 import { useResultStore } from '../store/resultStore';
+import { useAssessmentStore } from '../store/assessmentStore';
+import { useProfileStore } from '../store/profileStore';
 import {
   colors,
   typography,
@@ -138,6 +140,10 @@ const sectionHeaderStyles = StyleSheet.create({
 
 export default function ResultScreen({ navigation }: Props) {
   const report = useResultStore((s) => s.report);
+  const goal = useAssessmentStore((s) => s.goal);
+  const ageGroup = useProfileStore((s) => s.profile?.age_group);
+
+  const showUniversityBtn = goal === 'university' && ageGroup === 'senior';
 
   if (report === null) {
     return (
@@ -159,6 +165,10 @@ export default function ResultScreen({ navigation }: Props) {
 
   function handleDirectionPress(direction: DirectionResult) {
     navigation.navigate('DirectionDetail', { direction });
+  }
+
+  function handleUniversityPress(direction: DirectionResult) {
+    navigation.navigate('UniversityList', { directionSlug: direction.slug });
   }
 
   return (
@@ -301,6 +311,15 @@ export default function ResultScreen({ navigation }: Props) {
               >
                 <Text style={styles.detailBtnText}>{'Подробнее'}</Text>
               </TouchableOpacity>
+              {showUniversityBtn && (
+                <TouchableOpacity
+                  style={styles.universityBtn}
+                  onPress={() => handleUniversityPress(direction)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.universityBtnText}>{'🎓 Найти университеты'}</Text>
+                </TouchableOpacity>
+              )}
             </View>
           ))}
         </View>
@@ -534,6 +553,19 @@ const styles = StyleSheet.create({
   detailBtnText: {
     ...typography.label,
     color: colors.onPrimary,
+  },
+  universityBtn: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  universityBtnText: {
+    ...typography.label,
+    color: colors.primary,
   },
   // Empty state
   emptyCenter: {

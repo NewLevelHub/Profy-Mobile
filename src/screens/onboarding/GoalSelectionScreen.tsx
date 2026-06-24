@@ -58,7 +58,7 @@ const GOAL_CARDS: GoalCard[] = [
 export default function GoalSelectionScreen({ navigation }: Props) {
   const ageGroup = useProfileStore((s) => s.profile?.age_group);
   const setAssessment = useAssessmentStore((s) => s.setAssessment);
-
+  const resetAssessment = useAssessmentStore((s) => s.resetAssessment);
   const [loading, setLoading] = useState(true);
   const [cardLoading, setCardLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +101,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
   function handleRestart() {
     setDialogVisible(false);
     setExisting(null);
+    resetAssessment();
   }
 
   const visibleCards = GOAL_CARDS.filter(

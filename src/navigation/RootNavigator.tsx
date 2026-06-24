@@ -19,6 +19,10 @@ import ResultLoadingScreen from '../screens/ResultLoadingScreen';
 import ResultScreen from '../screens/ResultScreen';
 import DirectionDetailScreen from '../screens/DirectionDetailScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
+import UniversityListScreen from '../screens/UniversityListScreen';
+import ProgramDetailScreen from '../screens/ProgramDetailScreen';
+import GapAnalysisScreen from '../screens/GapAnalysisScreen';
+import RoadmapScreen from '../screens/RoadmapScreen';
 import { colors } from '../constants/themes/themes';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
@@ -74,6 +78,10 @@ function AppNavigator() {
       <AppStack.Screen name="ResultLoading" component={ResultLoadingScreen} />
       <AppStack.Screen name="Result" component={ResultScreen} />
       <AppStack.Screen name="DirectionDetail" component={DirectionDetailScreen} />
+      <AppStack.Screen name="UniversityList" component={UniversityListScreen} />
+      <AppStack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
+      <AppStack.Screen name="GapAnalysis" component={GapAnalysisScreen} />
+      <AppStack.Screen name="Roadmap" component={RoadmapScreen} />
     </AppStack.Navigator>
   );
 }

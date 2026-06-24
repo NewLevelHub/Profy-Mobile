@@ -1,3 +1,52 @@
+// ─── University / Gap-analysis domain ─────────────────────────────────────────
+
+export interface UniversityBrief {
+  id: string;
+  name: string;
+  country: string;
+  city: string;
+  website: string | null;
+  ranking: number | null;
+}
+
+export interface ProgramBrief {
+  id: string;
+  name: string;
+  direction_slug: string;
+  language: string;
+  cost_per_year: number | null;
+  description: string | null;
+  university: UniversityBrief;
+}
+
+export interface ProgramDetail extends ProgramBrief {
+  who_its_for: string | null;
+  career_options: unknown[];
+  requirements: Record<string, unknown>;
+  deadlines: Record<string, unknown>;
+  grants: unknown[];
+  created_at: string;
+}
+
+export type GapStatus = 'met' | 'not_met' | 'in_progress' | 'unknown';
+
+export interface GapItem {
+  requirement: string;
+  status: GapStatus;
+  comment: string;
+}
+
+export interface GapAnalysisResponse {
+  program_id: string;
+  met: GapItem[];
+  not_met: GapItem[];
+  in_progress: GapItem[];
+  unknown: GapItem[];
+  readiness_score: number;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+
 export type RootStackParamList = {
   Splash: undefined;
   Auth: undefined;
@@ -22,6 +71,10 @@ export type AppStackParamList = {
   ResultLoading: { assessmentId: string };
   Result: undefined;
   DirectionDetail: { direction: DirectionResult };
+  UniversityList: { directionSlug: string };
+  ProgramDetail: { programId: string; programName: string; universityName: string };
+  GapAnalysis: { programId: string; assessmentId: string; programName: string; universityName: string };
+  Roadmap: { assessmentId: string };
 };
 
 export type AssessmentGoal = 'explore' | 'profession' | 'university';
