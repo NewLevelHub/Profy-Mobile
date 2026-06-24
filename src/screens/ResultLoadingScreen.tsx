@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
-import { generateReport } from '../api/assessment';
+import { generateReport } from '../api/result';
+import { useResultStore } from '../store/resultStore';
 import { colors, typography, spacing, radii } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ResultLoading'>;
@@ -21,6 +22,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
   const textOpacity = useRef(new Animated.Value(1)).current;
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
+  const setReport = useResultStore((s) => s.setReport);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -55,8 +57,9 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
   useEffect(() => {
     async function fetchReport() {
       try {
-        await generateReport(assessmentId);
+        const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
+        setReport(report);
         navigation.replace('Result');
       } catch {
         if (isMountedRef.current) {
@@ -71,8 +74,9 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
     setError(null);
     async function retry() {
       try {
-        await generateReport(assessmentId);
+        const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
+        setReport(report);
         navigation.replace('Result');
       } catch {
         if (isMountedRef.current) {

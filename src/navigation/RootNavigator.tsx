@@ -17,6 +17,7 @@ import AssessmentScreen from '../screens/AssessmentScreen';
 import PraiseScreen from '../screens/PraiseScreen';
 import ResultLoadingScreen from '../screens/ResultLoadingScreen';
 import ResultScreen from '../screens/ResultScreen';
+import DirectionDetailScreen from '../screens/DirectionDetailScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import { colors } from '../constants/themes/themes';
 
@@ -72,6 +73,7 @@ function AppNavigator() {
       <AppStack.Screen name="Home" component={HomeScreen} />
       <AppStack.Screen name="ResultLoading" component={ResultLoadingScreen} />
       <AppStack.Screen name="Result" component={ResultScreen} />
+      <AppStack.Screen name="DirectionDetail" component={DirectionDetailScreen} />
     </AppStack.Navigator>
   );
 }
