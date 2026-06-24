@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { getProfile } from '../api/profile';
 import { RootStackParamList, AuthStackParamList, AppStackParamList } from '../types';
 import SplashScreen from '../screens/SplashScreen';
@@ -41,6 +42,8 @@ function AuthNavigator() {
 function AppNavigator() {
   const setProfile = useProfileStore((s) => s.setProfile);
   const clearProfile = useProfileStore((s) => s.clearProfile);
+  const logout = useAuthStore((s) => s.logout);
+  const resetAssessment = useAssessmentStore((s) => s.resetAssessment);
   const [initialRoute, setInitialRoute] = useState<keyof AppStackParamList | null>(null);
 
   useEffect(() => {
@@ -49,7 +52,16 @@ function AppNavigator() {
         setProfile(p);
         setInitialRoute('Home');
       })
-      .catch(() => {
+      .catch((err) => {
+        const status = err?.response?.status;
+        if (status === 401) {
+          // Token is invalid or user no longer exists — full logout
+          logout();
+          resetAssessment();
+          clearProfile();
+          // RootNavigator will re-render to AuthStack since token is now null
+          return;
+        }
         clearProfile();
         setInitialRoute('Welcome');
       });
