@@ -28,6 +28,32 @@ import { ALL_BLOCKS, BLOCK_NAMES, BLOCK_DESCRIPTIONS } from '../constants/blocks
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
 
+import { getAssessmentBlocks } from '../utils/assessmentBlocks';
+
+type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
+
+const BLOCK_NAMES: Record<AssessmentBlock, string> = {
+  interests: 'Интересы',
+  thinking: 'Стиль мышления',
+  personality: 'Личность',
+  motivation: 'Мотивация',
+  academic: 'Учебные склонности',
+  directions: 'Направления',
+  goal_clarification: 'Твоя цель',
+  university: 'Университет',
+};
+
+const BLOCK_DESCRIPTIONS: Record<AssessmentBlock, string> = {
+  interests: 'Узнаем, что тебя по-настоящему интересует',
+  thinking: 'Разберёмся, как ты думаешь и решаешь задачи',
+  personality: 'Поймём твои сильные стороны характера',
+  motivation: 'Выясним, что тебя вдохновляет и движет',
+  academic: 'Посмотрим, какие предметы тебе ближе всего',
+  directions: 'Определим подходящие профессиональные пути',
+  goal_clarification: 'Уточним твою главную цель',
+  university: 'Подберём университеты под твой профиль',
+};
+
 export default function AssessmentScreen({ navigation }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
   const goal = useAssessmentStore((s) => s.goal);
@@ -35,8 +61,7 @@ export default function AssessmentScreen({ navigation }: Props) {
   const advanceBlock = useAssessmentStore((s) => s.advanceBlock);
   const ageGroup = useProfileStore((s) => s.profile?.age_group ?? 'middle');
 
-  const activeBlocks: AssessmentBlock[] =
-    goal === 'university' ? ALL_BLOCKS : ALL_BLOCKS.slice(0, 7);
+  const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const totalBlocks = activeBlocks.length;
 
   const [phase, setPhase] = useState<'loading' | 'intro' | 'question' | 'praise'>('loading');

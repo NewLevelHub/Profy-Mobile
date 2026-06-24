@@ -54,7 +54,7 @@ export default function RegisterScreen({ navigation }: Props) {
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
-        const message: string = err.response?.data?.message ?? '';
+        const message: string = err.response?.data?.detail ?? err.response?.data?.message ?? '';
         if (status === 400 && message.toLowerCase().includes('already')) {
           setEmailError('Этот email уже зарегистрирован');
         } else if (status === 409) {
