@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { AssessmentBlock, Question, SaveAnswersPayload } from '../types';
+import type { AssessmentBlock, Question, SaveAnswersPayload, SaveAnswersResponse } from '../types';
 
 export async function getQuestions(
   assessmentId: string,
@@ -14,6 +14,10 @@ export async function getQuestions(
 export async function saveAnswers(
   assessmentId: string,
   payload: SaveAnswersPayload,
-): Promise<void> {
-  await apiClient.post(`/api/v1/assessment/${assessmentId}/answers`, payload);
+): Promise<SaveAnswersResponse> {
+  const { data } = await apiClient.post<SaveAnswersResponse>(
+    `/api/v1/assessment/${assessmentId}/answers`,
+    payload,
+  );
+  return data;
 }

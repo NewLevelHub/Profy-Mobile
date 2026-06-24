@@ -15,6 +15,8 @@ import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
 import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
 import AssessmentScreen from '../screens/AssessmentScreen';
 import PraiseScreen from '../screens/PraiseScreen';
+import ResultLoadingScreen from '../screens/ResultLoadingScreen';
+import ResultScreen from '../screens/ResultScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import { colors } from '../constants/themes/themes';
 
@@ -68,6 +70,8 @@ function AppNavigator() {
       <AppStack.Screen name="Assessment" component={AssessmentScreen} />
       <AppStack.Screen name="Praise" component={PraiseScreen} />
       <AppStack.Screen name="Home" component={HomeScreen} />
+      <AppStack.Screen name="ResultLoading" component={ResultLoadingScreen} />
+      <AppStack.Screen name="Result" component={ResultScreen} />
     </AppStack.Navigator>
   );
 }

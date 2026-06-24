@@ -19,6 +19,8 @@ export type AppStackParamList = {
   Assessment: undefined;
   Home: undefined;
   Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
+  ResultLoading: { assessmentId: string };
+  Result: undefined;
 };
 
 export type AssessmentGoal = 'explore' | 'profession' | 'university';
@@ -82,6 +84,16 @@ export interface AnswerPayload {
 export interface SaveAnswersPayload {
   block: AssessmentBlock;
   answers: AnswerPayload[];
+}
+
+export interface SaveAnswersResponse {
+  block: AssessmentBlock;
+  scores: Record<string, number>;
+}
+
+export interface ReportResponse {
+  id: string;
+  assessment_id: string;
 }
 
 export interface ProfilePayload {
