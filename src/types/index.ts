@@ -74,8 +74,32 @@ export type AppStackParamList = {
   UniversityList: { directionSlug: string };
   ProgramDetail: { programId: string; programName: string; universityName: string };
   GapAnalysis: { programId: string; assessmentId: string; programName: string; universityName: string };
-  Roadmap: { assessmentId: string };
+  Roadmap: { assessmentId: string; subtitle?: string };
 };
+
+// ─── Roadmap domain ────────────────────────────────────────────────────────────
+
+export type RoadmapHorizonKey = 'month_1' | 'months_3' | 'months_6' | 'year_1' | 'until_goal';
+export type RoadmapTaskCategory = 'study' | 'language' | 'project' | 'exam' | 'explore' | 'achievement';
+
+export interface RoadmapTask {
+  text: string;
+  category: RoadmapTaskCategory;
+  priority: number;
+}
+
+export interface RoadmapMilestone {
+  horizon: RoadmapHorizonKey;
+  title: string;
+  tasks: RoadmapTask[];
+}
+
+export interface RoadmapResponse {
+  id: string;
+  assessment_id: string;
+  goal: string;
+  milestones: RoadmapMilestone[];
+}
 
 export type AssessmentGoal = 'explore' | 'profession' | 'university';
 export type AssessmentStatus = 'in_progress' | 'completed';
