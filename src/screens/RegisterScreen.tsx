@@ -11,8 +11,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
-import { registerUser, loginUser } from '../api/auth';
-import { useAuthStore } from '../store/authStore';
+import { registerUser } from '../api/auth';
 import { AuthStackParamList } from '../types';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
 
@@ -29,7 +28,6 @@ function validatePassword(password: string): string {
 }
 
 export default function RegisterScreen({ navigation }: Props) {
-  const login = useAuthStore((s) => s.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -47,9 +45,8 @@ export default function RegisterScreen({ navigation }: Props) {
     setFormError('');
     setIsLoading(true);
     try {
-      await registerUser(email.trim(), password);
-      const { access_token, user } = await loginUser(email.trim(), password);
-      login(access_token, user);
+      const { email: confirmedEmail } = await registerUser(email.trim(), password);
+      navigation.navigate('VerifyEmail', { email: confirmedEmail });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;

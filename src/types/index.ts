@@ -56,7 +56,14 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  VerifyEmail: { email: string };
 };
+
+export interface RegisterResponse {
+  user_id: string;
+  email: string;
+  message: string;
+}
 
 export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'MainTabs';
 

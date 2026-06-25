@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   View,
   Text,
   TextInput,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
-import { loginUser } from '../api/auth';
+import { loginUser, resendVerificationCode } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { AuthStackParamList } from '../types';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
@@ -50,8 +51,30 @@ export default function LoginScreen({ navigation }: Props) {
       const { access_token, user } = await loginUser(email.trim(), password);
       login(access_token, user);
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        setFormError('Неверный email или пароль');
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 401) {
+          setFormError('Неверный email или пароль');
+        } else if (status === 403) {
+          const detail = err.response?.data?.detail;
+          const unverifiedEmail: string = detail?.email ?? email.trim();
+          Alert.alert(
+            'Email не подтверждён',
+            'Подтвердите ваш email для входа',
+            [
+              { text: 'Отмена', style: 'cancel' },
+              {
+                text: 'Отправить код',
+                onPress: async () => {
+                  try { await resendVerificationCode(unverifiedEmail); } catch {}
+                  navigation.navigate('VerifyEmail', { email: unverifiedEmail });
+                },
+              },
+            ],
+          );
+        } else {
+          setFormError('Ошибка. Попробуйте позже');
+        }
       } else {
         setFormError('Ошибка. Попробуйте позже');
       }
