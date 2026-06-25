@@ -21,6 +21,7 @@ import {
   radii,
   shadows,
 } from '../constants/themes/themes';
+import { EmojiText, EmojiPrefixText } from '../components/common/EmojiText';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<AppTabParamList, 'Result'>,
@@ -118,7 +119,7 @@ function getInterestLevel(score: number): { label: string; color: string } {
 function SectionHeader({ emoji, title }: { emoji: string; title: string }) {
   return (
     <View style={sectionHeaderStyles.row}>
-      <Text style={sectionHeaderStyles.emoji}>{emoji}</Text>
+      <EmojiText size="sm" style={sectionHeaderStyles.emoji}>{emoji}</EmojiText>
       <Text style={sectionHeaderStyles.title}>{title}</Text>
     </View>
   );
@@ -131,10 +132,7 @@ const sectionHeaderStyles = StyleSheet.create({
     marginBottom: spacing.md,
     gap: spacing.sm,
   },
-  emoji: {
-    fontSize: 22,
-    lineHeight: 28,
-  },
+  emoji: {},
   title: {
     ...typography.title,
     color: colors.text,
@@ -217,9 +215,9 @@ export default function ResultScreen({ navigation }: Props) {
           >
             {(report.strengths ?? []).map((strength, index) => (
               <View key={index} style={styles.strengthChip}>
-                <Text style={styles.strengthIcon}>
+                <EmojiText size="md" style={styles.strengthIcon}>
                   {getIconForText(strength, STRENGTH_ICON_PAIRS)}
-                </Text>
+                </EmojiText>
                 <Text style={styles.strengthText}>{strength}</Text>
               </View>
             ))}
@@ -277,9 +275,9 @@ export default function ResultScreen({ navigation }: Props) {
           >
             {topThinking.map(([cat, score]) => (
               <View key={cat} style={styles.thinkingChip}>
-                <Text style={styles.thinkingChipEmoji}>
+                <EmojiText size="md" style={styles.thinkingChipEmoji}>
                   {THINKING_EMOJIS[cat] ?? '🔷'}
-                </Text>
+                </EmojiText>
                 <Text style={styles.thinkingChipLabel}>
                   {THINKING_LABELS[cat] ?? cat}
                 </Text>
@@ -294,9 +292,9 @@ export default function ResultScreen({ navigation }: Props) {
           <SectionHeader emoji="⚡" title="Что тебя мотивирует" />
           {(report.motivation ?? []).map((text, index) => (
             <View key={index} style={styles.motivationCard}>
-              <Text style={styles.motivationIcon}>
+              <EmojiText size="md" style={styles.motivationIcon}>
                 {getIconForText(text, MOTIVATION_ICON_PAIRS)}
-              </Text>
+              </EmojiText>
               <Text style={styles.motivationText}>{text}</Text>
             </View>
           ))}
@@ -334,7 +332,9 @@ export default function ResultScreen({ navigation }: Props) {
                   onPress={() => handleUniversityPress(direction)}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.universityBtnText}>{'🎓 Найти университеты'}</Text>
+                  <EmojiPrefixText emojiChar="🎓" textStyle={styles.universityBtnText}>
+                    Найти университеты
+                  </EmojiPrefixText>
                 </TouchableOpacity>
               )}
             </View>

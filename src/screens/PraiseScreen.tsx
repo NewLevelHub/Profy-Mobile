@@ -10,6 +10,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
 import ConfettiBlast from '../components/common/ConfettiBlast';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Praise'>;
@@ -51,7 +52,7 @@ export default function PraiseScreen({ navigation, route }: Props) {
             { opacity: opacityAnim, transform: [{ scale: scaleAnim }] },
           ]}
         >
-          <Text style={styles.emoji}>{'🎉'}</Text>
+          <EmojiText size="hero" style={styles.emoji}>{'🎉'}</EmojiText>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </Animated.View>
@@ -78,9 +79,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['3xl'],
   },
   emoji: {
-    ...typography.display,
-    fontSize: 72,
-    lineHeight: 88,
     textAlign: 'center',
     marginBottom: spacing['2xl'],
   },

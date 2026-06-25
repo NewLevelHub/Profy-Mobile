@@ -11,6 +11,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ProgramBrief } from '../types';
 import { getPrograms } from '../api/university';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'UniversityList'>;
@@ -127,7 +128,7 @@ export default function UniversityListScreen({ route, navigation }: Props) {
         </View>
       ) : programs.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyEmoji}>{'🎓'}</Text>
+          <EmojiText size="lg" style={styles.emptyEmoji}>{'🎓'}</EmojiText>
           <Text style={styles.emptyTitle}>{'Программы не найдены'}</Text>
           <Text style={styles.emptySubtitle}>
             {'Попробуй выбрать другую страну или направление'}
@@ -160,11 +161,11 @@ export default function UniversityListScreen({ route, navigation }: Props) {
 
               <View style={styles.cardMeta}>
                 <View style={styles.metaItem}>
-                  <Text style={styles.metaIcon}>{'🌐'}</Text>
+                  <EmojiText size="xs" style={styles.metaIcon}>{'🌐'}</EmojiText>
                   <Text style={styles.metaText}>{program.language}</Text>
                 </View>
                 <View style={styles.metaItem}>
-                  <Text style={styles.metaIcon}>{'💰'}</Text>
+                  <EmojiText size="xs" style={styles.metaIcon}>{'💰'}</EmojiText>
                   <Text style={styles.metaText}>{formatCost(program.cost_per_year)}</Text>
                 </View>
               </View>
@@ -273,8 +274,7 @@ const styles = StyleSheet.create({
     color: colors.onPrimary,
   },
   emptyEmoji: {
-    fontSize: 48,
-    lineHeight: 56,
+    marginBottom: spacing.md,
   },
   emptyTitle: {
     ...typography.subtitle,

@@ -15,6 +15,7 @@ import { startAssessment, getCurrentAssessment } from '../../api/assessment';
 import { useAssessmentStore } from '../../store/assessmentStore';
 import { useProfileStore } from '../../store/profileStore';
 import BlockRoadmap from '../../components/common/BlockRoadmap';
+import { EmojiText } from '../../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GoalSelection'>;
@@ -148,7 +149,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
             activeOpacity={0.7}
           >
             <View style={styles.cardIconWrap}>
-              <Text style={styles.cardEmoji}>{card.emoji}</Text>
+              <EmojiText size="md" style={styles.cardEmoji}>{card.emoji}</EmojiText>
             </View>
             <View style={styles.cardBody}>
               <Text style={styles.cardTitle}>{card.title}</Text>
@@ -280,9 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  cardEmoji: {
-    fontSize: 22,
-  },
+  cardEmoji: {},
   cardBody: {
     flex: 1,
     marginLeft: spacing.lg,

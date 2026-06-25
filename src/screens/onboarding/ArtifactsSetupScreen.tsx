@@ -15,6 +15,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ArtifactItem } from '../../types';
 import { saveArtifacts } from '../../api/artifacts';
 import SubjectCard from '../../components/common/SubjectCard';
+import { TextWithLeadingEmoji } from '../../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ArtifactsSetup'>;
@@ -225,7 +226,9 @@ function Section({
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{emoji}  {title}</Text>
+      <TextWithLeadingEmoji emojiChar={emoji} textStyle={styles.sectionTitleText} style={styles.sectionTitle}>
+        {title}
+      </TextWithLeadingEmoji>
       {hint ? <Text style={styles.sectionHint}>{hint}</Text> : null}
       {children}
     </View>
@@ -327,10 +330,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing['3xl'],
   },
   sectionTitle: {
+    marginBottom: spacing.xs,
+  },
+  sectionTitleText: {
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.label,
     color: colors.text,
-    marginBottom: spacing.xs,
   },
   sectionHint: {
     fontFamily: fontFamily.bold,

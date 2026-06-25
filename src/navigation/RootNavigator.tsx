@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -32,19 +34,25 @@ import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 import GapAnalysisScreen from '../screens/GapAnalysisScreen';
 import RoadmapScreen from '../screens/RoadmapScreen';
 import { colors, fontFamily, fontSize } from '../constants/themes/themes';
-import HomeSVG from '../../assets/home.svg';
-import ResultsSVG from '../../assets/results.svg';
-import StrategySVG from '../../assets/strategy.svg';
-import ProfileSVG from '../../assets/Profile.svg';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
+const TAB_ICONS: Record<keyof AppTabParamList, { active: IoniconName; inactive: IoniconName }> = {
+  Home: { active: 'home', inactive: 'home-outline' },
+  Result: { active: 'document-text', inactive: 'document-text-outline' },
+  Roadmap: { active: 'map', inactive: 'map-outline' },
+  Profile: { active: 'person', inactive: 'person-outline' },
+};
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
 const Tab = createBottomTabNavigator<AppTabParamList>();
 
-function TabIcon({ Icon, focused }: { Icon: React.FC<{ width: number; height: number; fill?: string; stroke?: string }>; focused: boolean }) {
+function TabIcon({ tab, focused }: { tab: keyof AppTabParamList; focused: boolean }) {
   const iconColor = focused ? colors.primary : colors.textMuted;
-  return <Icon width={24} height={24} fill={iconColor} stroke={iconColor} />;
+  const name = focused ? TAB_ICONS[tab].active : TAB_ICONS[tab].inactive;
+  return <Ionicons name={name} size={24} color={iconColor} />;
 }
 
 function TabLabel({ label, focused }: { label: string; focused: boolean }) {
@@ -82,7 +90,7 @@ function MainTabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon Icon={HomeSVG} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon tab="Home" focused={focused} />,
           tabBarLabel: ({ focused }) => <TabLabel label="Главная" focused={focused} />,
         }}
       />
@@ -90,7 +98,7 @@ function MainTabNavigator() {
         name="Result"
         component={ResultScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon Icon={ResultsSVG} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon tab="Result" focused={focused} />,
           tabBarLabel: ({ focused }) => <TabLabel label="Результаты" focused={focused} />,
         }}
       />
@@ -98,7 +106,7 @@ function MainTabNavigator() {
         name="Roadmap"
         component={RoadmapScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon Icon={StrategySVG} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon tab="Roadmap" focused={focused} />,
           tabBarLabel: ({ focused }) => <TabLabel label="Роадмап" focused={focused} />,
         }}
       />
@@ -106,7 +114,7 @@ function MainTabNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon Icon={ProfileSVG} focused={focused} />,
+          tabBarIcon: ({ focused }) => <TabIcon tab="Profile" focused={focused} />,
           tabBarLabel: ({ focused }) => <TabLabel label="Профиль" focused={focused} />,
         }}
       />

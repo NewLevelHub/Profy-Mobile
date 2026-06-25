@@ -157,6 +157,21 @@ export const typography = {
   },
 } as const;
 
+/**
+ * Emoji-only text styles — use via EmojiText; never pair with Nunito fontFamily.
+ * iOS emoji font is applied in EmojiText.tsx (Apple Color Emoji).
+ */
+export const emoji = {
+  xs: { fontSize: fontSize.small, lineHeight: 16 },
+  sm: { fontSize: 22, lineHeight: 28 },
+  md: { fontSize: fontSize.title, lineHeight: 28 },
+  lg: { fontSize: 48, lineHeight: 56 },
+  xl: { fontSize: 64, lineHeight: 80 },
+  hero: { fontSize: 72, lineHeight: 88 },
+} as const;
+
+export type EmojiSize = keyof typeof emoji;
+
 // ===========================================================================
 // SPACING  (шаг 4)
 // ===========================================================================
@@ -222,6 +237,7 @@ export const theme = {
   fontFamily,
   fontSize,
   typography,
+  emoji,
   spacing,
   radii,
   cornerStyles,

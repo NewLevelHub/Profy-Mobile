@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
+import { TextWithLeadingEmoji } from '../components/common/EmojiText';
 import {
   colors,
   typography,
@@ -65,14 +66,18 @@ export default function DirectionDetailScreen({ route, navigation }: Props) {
 
         {/* Why it fits */}
         <View style={[styles.section, styles.whyCard]}>
-          <Text style={styles.sectionLabel}>{'✨ Почему тебе подходит'}</Text>
+          <TextWithLeadingEmoji emojiChar="✨" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+            Почему тебе подходит
+          </TextWithLeadingEmoji>
           <Text style={styles.whyText}>{direction.why_it_fits}</Text>
         </View>
 
         {/* Professions */}
         {(direction.professions ?? []).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{'👔 Профессии'}</Text>
+            <TextWithLeadingEmoji emojiChar="👔" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+              Профессии
+            </TextWithLeadingEmoji>
             <View style={styles.chipWrap}>
               {(direction.professions ?? []).map((prof, i) => (
                 <View key={i} style={styles.chip}>
@@ -86,7 +91,9 @@ export default function DirectionDetailScreen({ route, navigation }: Props) {
         {/* Skills needed */}
         {(direction.skills_needed ?? []).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{'🛠️ Навыки для развития'}</Text>
+            <TextWithLeadingEmoji emojiChar="🛠️" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+              Навыки для развития
+            </TextWithLeadingEmoji>
             {(direction.skills_needed ?? []).map((skill, i) => (
               <View key={i} style={styles.listRow}>
                 <Text style={styles.listBullet}>{'•'}</Text>
@@ -99,7 +106,9 @@ export default function DirectionDetailScreen({ route, navigation }: Props) {
         {/* Subjects to develop */}
         {(direction.subjects_to_develop ?? []).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{'📚 Предметы для изучения'}</Text>
+            <TextWithLeadingEmoji emojiChar="📚" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+              Предметы для изучения
+            </TextWithLeadingEmoji>
             <View style={styles.chipWrap}>
               {(direction.subjects_to_develop ?? []).map((subj, i) => (
                 <View key={i} style={[styles.chip, styles.chipSecondary]}>
@@ -113,7 +122,9 @@ export default function DirectionDetailScreen({ route, navigation }: Props) {
         {/* First steps */}
         {(direction.first_steps ?? []).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>{'🎯 Первые шаги'}</Text>
+            <TextWithLeadingEmoji emojiChar="🎯" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+              Первые шаги
+            </TextWithLeadingEmoji>
             {(direction.first_steps ?? []).map((step, i) => (
               <View key={i} style={styles.stepCard}>
                 <View style={styles.stepBadge}>
@@ -201,9 +212,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   sectionLabel: {
+    marginBottom: spacing.md,
+  },
+  sectionLabelText: {
     ...typography.bodyStrong,
     color: colors.text,
-    marginBottom: spacing.md,
   },
   whyText: {
     ...typography.body,

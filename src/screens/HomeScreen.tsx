@@ -14,6 +14,7 @@ import type { AppTabParamList, AppStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
 import { useAssessmentStore } from '../store/assessmentStore';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, radii, shadows, spacing, fontFamily, fontSize } from '../constants/themes/themes';
 import { BLOCK_NAMES, BLOCK_EMOJIS } from '../constants/blocks';
 import { getAssessmentBlocks } from '../utils/assessmentBlocks';
@@ -149,7 +150,7 @@ export default function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Result')}
             activeOpacity={0.8}
           >
-            <Text style={styles.quickEmoji}>{'📋'}</Text>
+            <EmojiText size="md" style={styles.quickEmoji}>{'📋'}</EmojiText>
             <Text style={styles.quickTitle}>{'Результаты'}</Text>
             <Text style={styles.quickSub}>{'Что мы узнали о тебе'}</Text>
           </TouchableOpacity>
@@ -159,7 +160,7 @@ export default function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('Roadmap')}
             activeOpacity={0.8}
           >
-            <Text style={styles.quickEmoji}>{'📘'}</Text>
+            <EmojiText size="md" style={styles.quickEmoji}>{'📘'}</EmojiText>
             <Text style={styles.quickTitle}>{'Роадмап'}</Text>
             <Text style={styles.quickSub}>{'Твой план развития'}</Text>
           </TouchableOpacity>
@@ -244,9 +245,9 @@ export default function HomeScreen({ navigation }: Props) {
                           isLocked && styles.blockCardEmojiLocked,
                         ]}
                       >
-                        <Text style={styles.blockCardEmojiText}>
+                        <EmojiText size="sm" style={styles.blockCardEmojiText}>
                           {BLOCK_EMOJIS[block]}
-                        </Text>
+                        </EmojiText>
                       </View>
                     </View>
                   </View>
@@ -256,7 +257,7 @@ export default function HomeScreen({ navigation }: Props) {
               {/* Locked result card */}
               <View style={styles.planCard}>
                 <View style={styles.planIconWrap}>
-                  <Text style={styles.planIconText}>{'🔒'}</Text>
+                  <EmojiText size="sm" style={styles.planIconText}>{'🔒'}</EmojiText>
                 </View>
                 <View style={styles.planBody}>
                   <Text style={styles.planTitle}>{'Твой план профессий'}</Text>
