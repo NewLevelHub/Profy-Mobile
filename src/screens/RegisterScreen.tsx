@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -71,14 +70,12 @@ export default function RegisterScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
+    <KeyboardAvoidingView style={styles.flex} behavior={undefined}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        automaticallyAdjustKeyboardInsets
       >
         {/* Brand */}
         <View style={styles.brand}>
@@ -94,59 +91,61 @@ export default function RegisterScreen({ navigation }: Props) {
           <Text style={styles.brandTagline}>Найди дело, которое тебе по душе</Text>
         </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Регистрация</Text>
+        {/* Form + Link */}
+        <View>
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>Регистрация</Text>
 
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, emailError ? styles.inputError : null]}
-              placeholder="Электронная почта"
-              placeholderTextColor={colors.textMuted}
-              value={email}
-              onChangeText={(v) => { setEmail(v); setEmailError(''); }}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              autoComplete="email"
-            />
-            {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[styles.input, emailError ? styles.inputError : null]}
+                placeholder="Электронная почта"
+                placeholderTextColor={colors.textMuted}
+                value={email}
+                onChangeText={(v) => { setEmail(v); setEmailError(''); }}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoComplete="email"
+              />
+              {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+            </View>
+
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[styles.input, passwordError ? styles.inputError : null]}
+                placeholder="Пароль"
+                placeholderTextColor={colors.textMuted}
+                value={password}
+                onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
+                secureTextEntry
+                autoComplete="new-password"
+              />
+              {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+            </View>
+
+            {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+
+            <TouchableOpacity
+              style={[styles.button, isLoading && styles.buttonDisabled]}
+              onPress={handleSubmit}
+              disabled={isLoading}
+              activeOpacity={0.85}
+            >
+              {isLoading ? (
+                <ActivityIndicator color={colors.onPrimary} />
+              ) : (
+                <Text style={styles.buttonText}>Зарегистрироваться</Text>
+              )}
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, passwordError ? styles.inputError : null]}
-              placeholder="Пароль"
-              placeholderTextColor={colors.textMuted}
-              value={password}
-              onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
-              secureTextEntry
-              autoComplete="new-password"
-            />
-            {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
-          </View>
-
-          {formError ? <Text style={styles.formError}>{formError}</Text> : null}
-
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={isLoading}
-            activeOpacity={0.85}
-          >
-            {isLoading ? (
-              <ActivityIndicator color={colors.onPrimary} />
-            ) : (
-              <Text style={styles.buttonText}>Зарегистрироваться</Text>
-            )}
+          <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.linkText}>
+              Уже есть аккаунт?{' '}
+              <Text style={styles.linkAccent}>Войти</Text>
+            </Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.linkText}>
-            Уже есть аккаунт?{' '}
-            <Text style={styles.linkAccent}>Войти</Text>
-          </Text>
-        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -162,11 +161,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['2xl'],
     paddingTop: 72,
     paddingBottom: spacing['3xl'],
-    justifyContent: 'center',
   },
   brand: {
+    flex: 1,
     alignItems: 'center',
-    marginBottom: 40,
+    justifyContent: 'center',
   },
   iconWrapper: {
     marginBottom: spacing.md,
@@ -175,15 +174,11 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 80,
     height: 80,
-    borderRadius: 22,
+    borderRadius: radii.lg,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.32,
-    shadowRadius: 18,
-    elevation: 8,
+    ...shadows.button,
   },
   iconLetter: {
     fontFamily: fontFamily.black,
@@ -197,7 +192,7 @@ const styles = StyleSheet.create({
     right: -6,
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: radii.pill,
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
@@ -205,29 +200,22 @@ const styles = StyleSheet.create({
     borderColor: colors.bg,
   },
   badgeStar: {
-    fontSize: 10,
+    ...typography.small,
     color: colors.onPrimary,
   },
   brandName: {
-    fontFamily: fontFamily.black,
-    fontSize: 30,
-    color: colors.text,
-    letterSpacing: -0.5,
+    ...typography.display,
     marginBottom: spacing.xs,
   },
   brandTagline: {
-    fontFamily: fontFamily.semibold,
-    fontSize: fontSize.body,
-    color: colors.textSecondary,
+    ...typography.body,
     textAlign: 'center',
   },
   form: {
     marginBottom: spacing.xl,
   },
   formTitle: {
-    fontFamily: fontFamily.black,
-    fontSize: fontSize.h1,
-    color: colors.text,
+    ...typography.h1,
     marginBottom: spacing.lg,
   },
   inputWrapper: {
@@ -241,26 +229,20 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semibold,
     fontSize: fontSize.body,
     color: colors.text,
-    shadowColor: '#1E1B4B',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+    ...shadows.card,
   },
   inputError: {
     borderWidth: 1.5,
     borderColor: colors.danger,
   },
   fieldError: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.small,
+    ...typography.small,
     marginTop: spacing.xs,
     color: colors.danger,
     paddingHorizontal: spacing.xs,
   },
   formError: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.caption,
+    ...typography.caption,
     marginBottom: spacing.md,
     color: colors.danger,
     textAlign: 'center',
@@ -287,9 +269,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   linkText: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.caption,
-    color: colors.textSecondary,
+    ...typography.caption,
   },
   linkAccent: {
     color: colors.primary,
