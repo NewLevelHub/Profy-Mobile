@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
 import { generateReport } from '../api/result';
 import { useResultStore } from '../store/resultStore';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { colors, typography, spacing, radii } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ResultLoading'>;
@@ -23,6 +24,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
   const setReport = useResultStore((s) => s.setReport);
+  const completeAssessment = useAssessmentStore((s) => s.completeAssessment);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -60,6 +62,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
+        completeAssessment();
         navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {
@@ -77,6 +80,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
+        completeAssessment();
         navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {

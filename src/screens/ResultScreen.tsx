@@ -146,15 +146,27 @@ const sectionHeaderStyles = StyleSheet.create({
 export default function ResultScreen({ navigation }: Props) {
   const report = useResultStore((s) => s.report);
   const goal = useAssessmentStore((s) => s.goal);
+  const hasCompletedAssessment = useAssessmentStore((s) => s.hasCompletedAssessment);
   const ageGroup = useProfileStore((s) => s.profile?.age_group);
 
   const showUniversityBtn = goal === 'university' && ageGroup === 'senior';
 
-  if (report === null) {
+  if (!hasCompletedAssessment) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.emptyCenter}>
-          <Text style={styles.emptyText}>{'Результаты не найдены'}</Text>
+          <Text style={styles.emptyIcon}>{'📋'}</Text>
+          <Text style={styles.emptyTitle}>{'Результатов пока нет'}</Text>
+          <Text style={styles.emptyText}>
+            {'Сначала требуется пройти тестирование, чтобы увидеть результаты'}
+          </Text>
+          <TouchableOpacity
+            style={styles.goHomeBtn}
+            onPress={() => navigation.navigate('Home')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.goHomeBtnText}>{'Перейти на главную'}</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -577,9 +589,33 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: spacing.screenH,
+    gap: spacing.md,
+  },
+  emptyIcon: {
+    fontSize: 52,
+    lineHeight: 64,
+  },
+  emptyTitle: {
+    ...typography.h1,
+    color: colors.text,
+    textAlign: 'center',
   },
   emptyText: {
     ...typography.body,
     color: colors.textMuted,
+    textAlign: 'center',
+  },
+  goHomeBtn: {
+    marginTop: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing['2xl'],
+    ...shadows.button,
+  },
+  goHomeBtnText: {
+    ...typography.label,
+    color: colors.onPrimary,
   },
 });

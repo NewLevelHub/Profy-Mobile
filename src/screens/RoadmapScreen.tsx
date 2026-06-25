@@ -22,7 +22,11 @@ import { generateRoadmap } from '../api/roadmap';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
 type Props = {
-  navigation: { goBack: () => void; canGoBack: () => boolean };
+  navigation: {
+    goBack: () => void;
+    canGoBack: () => boolean;
+    navigate: (screen: 'Home' | 'Result' | 'Roadmap' | 'Profile') => void;
+  };
 };
 
 const HORIZONS: { key: RoadmapHorizonKey; label: string }[] = [
@@ -69,6 +73,7 @@ function TaskCard({ task, index }: { task: RoadmapTask; index: number }) {
 
 export default function RoadmapScreen({ navigation }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
+  const hasCompletedAssessment = useAssessmentStore((s) => s.hasCompletedAssessment);
 
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -126,6 +131,27 @@ export default function RoadmapScreen({ navigation }: Props) {
 
   const currentMilestone: RoadmapMilestone | undefined =
     roadmap?.milestones?.find((m) => m.horizon === activeHorizon);
+
+  if (!hasCompletedAssessment) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Text style={styles.noAssessmentIcon}>{'🗺️'}</Text>
+          <Text style={styles.noAssessmentTitle}>{'План недоступен'}</Text>
+          <Text style={styles.noAssessmentText}>
+            {'Сначала требуется пройти тестирование, чтобы получить персональный план развития'}
+          </Text>
+          <TouchableOpacity
+            style={styles.goHomeBtn}
+            onPress={() => navigation.navigate('Home')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.goHomeBtnText}>{'Перейти на главную'}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -305,6 +331,31 @@ const styles = StyleSheet.create({
     ...shadows.button,
   },
   retryBtnText: {
+    ...typography.label,
+    color: colors.onPrimary,
+  },
+  noAssessmentIcon: {
+    fontSize: 52,
+    lineHeight: 64,
+  },
+  noAssessmentTitle: {
+    ...typography.h1,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  noAssessmentText: {
+    ...typography.body,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  goHomeBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    ...shadows.button,
+  },
+  goHomeBtnText: {
     ...typography.label,
     color: colors.onPrimary,
   },

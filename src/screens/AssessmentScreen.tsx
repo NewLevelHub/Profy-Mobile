@@ -24,11 +24,11 @@ import OptionCard from '../components/common/OptionCard';
 import BlockRoadmap from '../components/common/BlockRoadmap';
 import ConfettiBlast from '../components/common/ConfettiBlast';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
-import { ALL_BLOCKS, BLOCK_NAMES, BLOCK_DESCRIPTIONS } from '../constants/blocks';
-
+import { BLOCK_NAMES, BLOCK_DESCRIPTIONS, BLOCK_EMOJIS } from '../constants/blocks';
 import { getAssessmentBlocks } from '../utils/assessmentBlocks';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
+type Phase = 'loading' | 'intro' | 'question' | 'praise' | 'roadmap';
 
 export default function AssessmentScreen({ navigation }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
@@ -41,7 +41,7 @@ export default function AssessmentScreen({ navigation }: Props) {
   const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const totalBlocks = activeBlocks.length;
 
-  const [phase, setPhase] = useState<'loading' | 'intro' | 'question' | 'praise'>('loading');
+  const [phase, setPhase] = useState<Phase>('loading');
   const [praiseMessage, setPraiseMessage] = useState<{ title: string; subtitle: string } | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -55,9 +55,13 @@ export default function AssessmentScreen({ navigation }: Props) {
   const introOpacity = useRef(new Animated.Value(0)).current;
   const praiseScale = useRef(new Animated.Value(0.6)).current;
   const praiseOpacity = useRef(new Animated.Value(0)).current;
+  const roadmapOpacity = useRef(new Animated.Value(0)).current;
   const introTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const praiseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMountedRef = useRef(true);
+
+  // Snapshot of currentBlock at the moment praise starts
+  const completedBlockRef = useRef(0);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -80,7 +84,6 @@ export default function AssessmentScreen({ navigation }: Props) {
       setPhase('loading');
       setError(null);
       try {
-        // activeBlocks and assessmentId are stable for the duration of an assessment
         const data = await getQuestions(assessmentId!, activeBlocks[currentBlock]);
         if (!isMountedRef.current) return;
         setQuestions(data);
@@ -146,13 +149,10 @@ export default function AssessmentScreen({ navigation }: Props) {
   function handleOptionSelect(questionId: string, optionIndex: number) {
     const isLast = questionIndex === questions.length - 1;
 
-    // On non-last questions: lock after first tap to prevent double-submit during auto-advance
     if (!isLast && selectedOptionIndex !== null) return;
-
     setSelectedOptionIndex(optionIndex);
 
     if (isLast) {
-      // Upsert so the user can change their mind before pressing "Next Section"
       setBlockAnswers((prev) => {
         const idx = prev.findIndex((a) => a.question_id === questionId);
         if (idx >= 0) {
@@ -187,6 +187,16 @@ export default function AssessmentScreen({ navigation }: Props) {
     }, 300);
   }
 
+  function showRoadmap() {
+    roadmapOpacity.setValue(0);
+    setPhase('roadmap');
+    Animated.timing(roadmapOpacity, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }
+
   async function handleNextBlock() {
     setSaving(true);
     setError(null);
@@ -196,6 +206,7 @@ export default function AssessmentScreen({ navigation }: Props) {
         answers: blockAnswers,
       });
       markBlockCompleted(activeBlocks[currentBlock]);
+      completedBlockRef.current = currentBlock;
       const isLast = currentBlock + 1 >= totalBlocks;
       const blockName = BLOCK_NAMES[activeBlocks[currentBlock]];
       setPraiseMessage({
@@ -215,7 +226,12 @@ export default function AssessmentScreen({ navigation }: Props) {
         Animated.timing(praiseOpacity, { toValue: 1, duration: 250, useNativeDriver: true }),
       ]).start();
       praiseTimerRef.current = setTimeout(() => {
-        if (isMountedRef.current) advanceBlock();
+        if (!isMountedRef.current) return;
+        if (isLast) {
+          advanceBlock();
+        } else {
+          showRoadmap();
+        }
       }, 2500);
     } catch {
       setError('Не удалось сохранить ответы. Попробуй ещё раз.');
@@ -229,6 +245,15 @@ export default function AssessmentScreen({ navigation }: Props) {
       clearTimeout(praiseTimerRef.current);
       praiseTimerRef.current = null;
     }
+    const isLast = completedBlockRef.current + 1 >= totalBlocks;
+    if (isLast) {
+      advanceBlock();
+    } else {
+      showRoadmap();
+    }
+  }
+
+  function handleRoadmapContinue() {
     advanceBlock();
   }
 
@@ -249,8 +274,14 @@ export default function AssessmentScreen({ navigation }: Props) {
   const showNextButton = isLastQuestion && selectedOptionIndex !== null;
   const isLastBlock = currentBlock + 1 >= totalBlocks;
 
+  const completedCount = completedBlockRef.current + 1;
+  // Index of the next block that is now unlocked after praise
+  const nextBlockIndex = completedBlockRef.current + 1;
+
   return (
     <SafeAreaView style={styles.safe}>
+
+      {/* ── PRAISE ─────────────────────────────────────────────── */}
       {phase === 'praise' && praiseMessage !== null && (
         <View style={styles.praiseRoot}>
           <ConfettiBlast />
@@ -264,6 +295,24 @@ export default function AssessmentScreen({ navigation }: Props) {
               <Text style={styles.praiseEmoji}>{'⭐'}</Text>
               <Text style={styles.praiseTitle}>{praiseMessage.title}</Text>
               <Text style={styles.praiseSubtitle}>{praiseMessage.subtitle}</Text>
+
+              {/* Progress bar — only for non-last blocks */}
+              {completedBlockRef.current + 1 < totalBlocks && (
+                <View style={styles.praiseProgressCard}>
+                  <Text style={styles.praiseProgressLabel}>{'Прогресс'}</Text>
+                  <View style={styles.praiseProgressBar}>
+                    <View
+                      style={[
+                        styles.praiseProgressFill,
+                        { width: `${(completedCount / totalBlocks) * 100}%` },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.praiseProgressFraction}>
+                    {`${completedCount}/${totalBlocks}`}
+                  </Text>
+                </View>
+              )}
             </Animated.View>
           </View>
           <TouchableOpacity
@@ -275,7 +324,123 @@ export default function AssessmentScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
       )}
-      {phase !== 'praise' && (
+
+      {/* ── BETWEEN-BLOCK ROADMAP ──────────────────────────────── */}
+      {phase === 'roadmap' && (
+        <Animated.View style={[styles.roadmapRoot, { opacity: roadmapOpacity }]}>
+          {/* Header row */}
+          <View style={styles.roadmapPhaseHeader}>
+            <View style={styles.roadmapProgressChip}>
+              <Text style={styles.roadmapProgressText}>
+                {`${completedCount}/${totalBlocks} блоков пройдено`}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleExit}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            >
+              <Text style={styles.roadmapExitBtn}>{'✕'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Block list */}
+          <ScrollView
+            style={styles.roadmapScroll}
+            contentContainerStyle={styles.roadmapScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {activeBlocks.map((block, index) => {
+              const isCompleted = index < nextBlockIndex;
+              const isCurrent = index === nextBlockIndex;
+              const isLocked = index > nextBlockIndex;
+              return (
+                <View
+                  key={block}
+                  style={[
+                    styles.blockCard,
+                    isCurrent && styles.blockCardCurrent,
+                  ]}
+                >
+                  {/* Status circle */}
+                  <View
+                    style={[
+                      styles.blockCardCircle,
+                      isCompleted && styles.blockCardCircleCompleted,
+                      isCurrent && styles.blockCardCircleCurrent,
+                      isLocked && styles.blockCardCircleLocked,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.blockCardCircleText,
+                        isLocked && styles.blockCardCircleTextLocked,
+                      ]}
+                    >
+                      {isCompleted ? '✓' : String(index + 1)}
+                    </Text>
+                  </View>
+
+                  {/* Name + status */}
+                  <View style={styles.blockCardContent}>
+                    <Text
+                      style={[
+                        styles.blockCardName,
+                        isCurrent && styles.blockCardNameCurrent,
+                        isLocked && styles.blockCardNameLocked,
+                      ]}
+                    >
+                      {BLOCK_NAMES[block]}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.blockCardStatus,
+                        isCompleted && styles.blockCardStatusCompleted,
+                        isCurrent && styles.blockCardStatusCurrent,
+                      ]}
+                    >
+                      {isCompleted ? 'Пройден' : isCurrent ? 'Сейчас' : 'Откроется позже'}
+                    </Text>
+                  </View>
+
+                  {/* Emoji in rounded square */}
+                  <View
+                    style={[
+                      styles.blockCardEmojiWrap,
+                      isLocked && styles.blockCardEmojiWrapLocked,
+                    ]}
+                  >
+                    <Text style={styles.blockCardEmoji}>{BLOCK_EMOJIS[block]}</Text>
+                  </View>
+                </View>
+              );
+            })}
+
+            {/* Locked result card */}
+            <View style={styles.planCard}>
+              <View style={styles.planCardIconWrap}>
+                <Text style={styles.planCardIconText}>{'🔒'}</Text>
+              </View>
+              <View style={styles.planCardBody}>
+                <Text style={styles.planCardTitle}>{'Твой план профессий'}</Text>
+                <Text style={styles.planCardSubtitle}>
+                  {'Откроется, когда пройдёшь все блоки'}
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+
+          <TouchableOpacity
+            style={styles.roadmapContinueBtn}
+            onPress={handleRoadmapContinue}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.roadmapContinueBtnText}>{'Продолжить тест'}</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* ── QUESTION / INTRO / LOADING ─────────────────────────── */}
+      {phase !== 'praise' && phase !== 'roadmap' && (
         <>
           <View style={styles.header}>
             {phase === 'question' && questionIndex > 0 ? (
@@ -294,9 +459,16 @@ export default function AssessmentScreen({ navigation }: Props) {
                 {`Блок ${currentBlock + 1} из ${totalBlocks}`}
               </Text>
               {phase !== 'loading' && (
-                <Text style={styles.blockName} numberOfLines={1}>
-                  {BLOCK_NAMES[activeBlocks[currentBlock]]}
-                </Text>
+                <>
+                  <Text style={styles.blockName} numberOfLines={1}>
+                    {BLOCK_NAMES[activeBlocks[currentBlock]]}
+                  </Text>
+                  {phase === 'question' && questions.length > 0 && (
+                    <Text style={styles.questionCounter}>
+                      {`Вопрос ${questionIndex + 1} из ${questions.length}`}
+                    </Text>
+                  )}
+                </>
               )}
               <View style={styles.progressTrack}>
                 <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
@@ -405,6 +577,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.bg,
   },
+
+  // ── Header (question / intro / loading) ───────────────────────
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -425,6 +599,11 @@ const styles = StyleSheet.create({
   },
   blockName: {
     ...typography.label,
+    marginBottom: 2,
+  },
+  questionCounter: {
+    ...typography.small,
+    color: colors.textMuted,
     marginBottom: spacing.sm,
   },
   progressTrack: {
@@ -461,14 +640,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: spacing.xs,
   },
+  closeBtnText: {
+    ...typography.caption,
+    color: colors.textSecondary,
+  },
   roadmapStrip: {
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-  },
-  closeBtnText: {
-    ...typography.caption,
-    color: colors.textSecondary,
   },
   center: {
     flex: 1,
@@ -550,6 +729,8 @@ const styles = StyleSheet.create({
     ...typography.bodyStrong,
     color: colors.onPrimary,
   },
+
+  // ── Praise phase ──────────────────────────────────────────────
   praiseRoot: {
     flex: 1,
     backgroundColor: colors.bg,
@@ -562,6 +743,7 @@ const styles = StyleSheet.create({
   praiseContent: {
     alignItems: 'center',
     paddingHorizontal: spacing['3xl'],
+    width: '100%',
   },
   praiseEmoji: {
     ...typography.display,
@@ -578,9 +760,47 @@ const styles = StyleSheet.create({
   praiseSubtitle: {
     ...typography.body,
     textAlign: 'center',
+    color: colors.textSecondary,
+    marginBottom: spacing['2xl'],
+  },
+  praiseProgressCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadows.card,
+  },
+  praiseProgressLabel: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    flexShrink: 0,
+  },
+  praiseProgressBar: {
+    flex: 1,
+    height: 8,
+    backgroundColor: colors.track,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  praiseProgressFill: {
+    height: 8,
+    backgroundColor: colors.ok,
+    borderRadius: 4,
+  },
+  praiseProgressFraction: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    flexShrink: 0,
+    fontFamily: fontFamily.bold,
   },
   praiseBtn: {
-    marginHorizontal: spacing['3xl'],
+    marginHorizontal: spacing['2xl'],
     marginBottom: spacing['3xl'],
     paddingVertical: spacing.lg,
     borderRadius: radii.pill,
@@ -589,6 +809,182 @@ const styles = StyleSheet.create({
     ...shadows.button,
   },
   praiseBtnText: {
+    ...typography.bodyStrong,
+    color: colors.onPrimary,
+  },
+
+  // ── Between-block roadmap phase ───────────────────────────────
+  roadmapRoot: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  roadmapPhaseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing['2xl'],
+    paddingTop: spacing['2xl'],
+    paddingBottom: spacing.lg,
+  },
+  roadmapProgressChip: {
+    backgroundColor: colors.ok + '22',
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
+  },
+  roadmapProgressText: {
+    ...typography.caption,
+    color: colors.ok,
+    fontFamily: fontFamily.bold,
+  },
+  roadmapExitBtn: {
+    ...typography.body,
+    color: colors.textMuted,
+    paddingHorizontal: spacing.sm,
+  },
+  roadmapScroll: {
+    flex: 1,
+  },
+  roadmapScrollContent: {
+    paddingHorizontal: spacing['2xl'],
+    paddingBottom: spacing.lg,
+    gap: spacing.xs,
+  },
+
+  // Block cards (between-block roadmap)
+  blockCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.lg,
+    ...shadows.card,
+  },
+  blockCardCurrent: {
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+  },
+  blockCardCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  blockCardCircleCompleted: {
+    backgroundColor: colors.nodeCompleted,
+  },
+  blockCardCircleCurrent: {
+    backgroundColor: colors.nodeCurrent,
+  },
+  blockCardCircleLocked: {
+    backgroundColor: colors.nodeLocked,
+  },
+  blockCardCircleText: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: 16,
+    color: colors.onPrimary,
+  },
+  blockCardCircleTextLocked: {
+    color: colors.textMuted,
+  },
+  blockCardContent: {
+    flex: 1,
+  },
+  blockCardName: {
+    fontFamily: fontFamily.bold,
+    fontSize: 15,
+    color: colors.text,
+  },
+  blockCardNameCurrent: {
+    fontFamily: fontFamily.extrabold,
+  },
+  blockCardNameLocked: {
+    color: colors.textMuted,
+    fontFamily: fontFamily.semibold,
+  },
+  blockCardStatus: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  blockCardStatusCompleted: {
+    color: colors.ok,
+  },
+  blockCardStatusCurrent: {
+    color: colors.primary,
+  },
+  blockCardEmojiWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.sm,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  blockCardEmojiWrapLocked: {
+    backgroundColor: colors.bg,
+    opacity: 0.55,
+  },
+  blockCardEmoji: {
+    fontSize: 22,
+  },
+
+  // Locked plan card
+  planCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF7ED',
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    marginTop: spacing.xs,
+    gap: spacing.lg,
+  },
+  planCardIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: radii.sm,
+    backgroundColor: colors.accent + '25',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  planCardIconText: {
+    fontSize: 22,
+  },
+  planCardBody: {
+    flex: 1,
+  },
+  planCardTitle: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: 15,
+    color: '#9A3412',
+  },
+  planCardSubtitle: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 13,
+    color: colors.accent,
+    marginTop: 2,
+  },
+
+  // Continue button
+  roadmapContinueBtn: {
+    marginHorizontal: spacing['2xl'],
+    marginBottom: spacing['3xl'],
+    marginTop: spacing.lg,
+    paddingVertical: spacing.lg,
+    borderRadius: radii.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    ...shadows.button,
+  },
+  roadmapContinueBtnText: {
     ...typography.bodyStrong,
     color: colors.onPrimary,
   },
