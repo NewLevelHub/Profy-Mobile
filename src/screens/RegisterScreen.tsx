@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
 import { registerUser } from '../api/auth';
@@ -34,6 +35,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const [passwordError, setPasswordError] = useState('');
   const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit() {
     const eErr = validateEmail(email);
@@ -108,15 +110,20 @@ export default function RegisterScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.inputWrapper}>
-              <TextInput
-                style={[styles.input, passwordError ? styles.inputError : null]}
-                placeholder="Пароль"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
-                secureTextEntry
-                autoComplete="new-password"
-              />
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={[styles.input, styles.inputWithIcon, passwordError ? styles.inputError : null]}
+                  placeholder="Пароль"
+                  placeholderTextColor={colors.textMuted}
+                  value={password}
+                  onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
+                  secureTextEntry={!showPassword}
+                  autoComplete="new-password"
+                />
+                <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(v => !v)} activeOpacity={0.7}>
+                  <Feather name={showPassword ? 'eye-off' : 'eye'} size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
               {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
             </View>
 
@@ -217,6 +224,21 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginBottom: spacing.md,
+  },
+  inputContainer: {
+    position: 'relative',
+  },
+  inputWithIcon: {
+    paddingRight: 48,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+    top: 0,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
   },
   input: {
     height: 56,

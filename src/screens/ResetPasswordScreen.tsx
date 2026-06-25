@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
@@ -41,6 +42,8 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
   const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!success) return;
@@ -134,31 +137,41 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
 
         <View style={styles.form}>
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, newPasswordError ? styles.inputError : null]}
-              placeholder="Новый пароль"
-              placeholderTextColor={colors.textMuted}
-              value={newPassword}
-              onChangeText={handleNewPasswordChange}
-              secureTextEntry
-              autoComplete="new-password"
-              autoFocus
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, styles.inputWithIcon, newPasswordError ? styles.inputError : null]}
+                placeholder="Новый пароль"
+                placeholderTextColor={colors.textMuted}
+                value={newPassword}
+                onChangeText={handleNewPasswordChange}
+                secureTextEntry={!showNewPassword}
+                autoComplete="new-password"
+                autoFocus
+              />
+              <TouchableOpacity style={styles.eyeButton} onPress={() => setShowNewPassword(v => !v)} activeOpacity={0.7}>
+                <Feather name={showNewPassword ? 'eye-off' : 'eye'} size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
             {newPasswordError ? (
               <Text style={styles.fieldError}>{newPasswordError}</Text>
             ) : null}
           </View>
 
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, confirmPasswordError ? styles.inputError : null]}
-              placeholder="Повторите пароль"
-              placeholderTextColor={colors.textMuted}
-              value={confirmPassword}
-              onChangeText={handleConfirmChange}
-              secureTextEntry
-              autoComplete="new-password"
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[styles.input, styles.inputWithIcon, confirmPasswordError ? styles.inputError : null]}
+                placeholder="Повторите пароль"
+                placeholderTextColor={colors.textMuted}
+                value={confirmPassword}
+                onChangeText={handleConfirmChange}
+                secureTextEntry={!showConfirmPassword}
+                autoComplete="new-password"
+              />
+              <TouchableOpacity style={styles.eyeButton} onPress={() => setShowConfirmPassword(v => !v)} activeOpacity={0.7}>
+                <Feather name={showConfirmPassword ? 'eye-off' : 'eye'} size={20} color={colors.textMuted} />
+              </TouchableOpacity>
+            </View>
             {confirmPasswordError ? (
               <Text style={styles.fieldError}>{confirmPasswordError}</Text>
             ) : null}
@@ -231,6 +244,21 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginBottom: spacing.md,
+  },
+  inputContainer: {
+    position: 'relative',
+  },
+  inputWithIcon: {
+    paddingRight: 48,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+    top: 0,
+    height: 56,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
   },
   input: {
     height: 56,
