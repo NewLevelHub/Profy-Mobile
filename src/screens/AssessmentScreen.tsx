@@ -229,6 +229,10 @@ export default function AssessmentScreen({ navigation }: Props) {
         if (!isMountedRef.current) return;
         if (isLast) {
           advanceBlock();
+        } else if (completedBlockRef.current === 0) {
+          // After first block — go home so user sees progress on HomeScreen
+          advanceBlock();
+          navigation.navigate('MainTabs');
         } else {
           showRoadmap();
         }
@@ -248,6 +252,9 @@ export default function AssessmentScreen({ navigation }: Props) {
     const isLast = completedBlockRef.current + 1 >= totalBlocks;
     if (isLast) {
       advanceBlock();
+    } else if (completedBlockRef.current === 0) {
+      advanceBlock();
+      navigation.navigate('MainTabs');
     } else {
       showRoadmap();
     }

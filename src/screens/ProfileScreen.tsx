@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -7,6 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { AppTabParamList, AppStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
 import { useAssessmentStore } from '../store/assessmentStore';
@@ -20,6 +25,11 @@ import {
   spacing,
   typography,
 } from '../constants/themes/themes';
+
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Profile'>,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 const AGE_GROUP_LABELS: Record<string, string> = {
   junior: 'Младший (6–10 лет)',
@@ -53,7 +63,7 @@ function ChipList({ label, items }: { label: string; items: string[] }) {
   );
 }
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }: Props) {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const profile = useProfileStore((s) => s.profile);
@@ -69,6 +79,25 @@ export default function ProfileScreen() {
     resetAssessment();
     clearReport();
     logout();
+  }
+
+  function handleRestartAssessment() {
+    Alert.alert(
+      'Начать заново?',
+      'Весь текущий прогресс будет сброшен. Ты начнёшь диагностику с самого начала.',
+      [
+        { text: 'Отмена', style: 'cancel' },
+        {
+          text: 'Начать заново',
+          style: 'destructive',
+          onPress: () => {
+            resetAssessment();
+            clearReport();
+            navigation.navigate('GoalSelection');
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -128,6 +157,15 @@ export default function ProfileScreen() {
             </Text>
           </View>
         )}
+
+        {/* Restart assessment */}
+        <TouchableOpacity
+          style={styles.restartBtn}
+          onPress={handleRestartAssessment}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.restartText}>{'🔄  Начать тестирование заново'}</Text>
+        </TouchableOpacity>
 
         {/* Logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
@@ -293,6 +331,22 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+
+  // Restart
+  restartBtn: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing['2xl'],
+    borderRadius: radii.lg,
+    backgroundColor: colors.primarySoft,
+    marginBottom: spacing.md,
+    marginTop: spacing.lg,
+  },
+  restartText: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.body,
+    color: colors.primaryDeep,
   },
 
   // Logout
