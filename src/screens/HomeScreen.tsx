@@ -13,6 +13,7 @@ import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
 import { useAssessmentStore } from '../store/assessmentStore';
 import BlockRoadmap from '../components/common/BlockRoadmap';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, radii, shadows, spacing, typography, fontFamily, fontSize } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
@@ -53,11 +54,16 @@ export default function HomeScreen({ navigation }: Props) {
           <View style={styles.headerTexts}>
             <Text style={styles.greeting}>{greeting}</Text>
             <Text style={styles.headerSub}>
-              {isCompleted
-                ? 'Ты прошёл всю диагностику 🎉'
-                : inProgress
-                ? `Блок ${currentBlock + 1} из ${totalBlocks}`
-                : 'Готов начать?'}
+              {isCompleted ? (
+                <>
+                  {'Ты прошёл всю диагностику '}
+                  <EmojiText size="sm">🎉</EmojiText>
+                </>
+              ) : inProgress ? (
+                `Блок ${currentBlock + 1} из ${totalBlocks}`
+              ) : (
+                'Готов начать?'
+              )}
             </Text>
           </View>
           <View style={styles.avatar}>
@@ -97,7 +103,7 @@ export default function HomeScreen({ navigation }: Props) {
         {/* Empty state card */}
         {!hasAssessment && (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyEmoji}>🗺️</Text>
+            <EmojiText size="lg" style={styles.emptyEmoji}>🗺</EmojiText>
             <Text style={styles.emptyTitle}>Пройди диагностику</Text>
             <Text style={styles.emptyDesc}>
               7 коротких блоков — и ты получишь персональную карту профессий
@@ -226,7 +232,6 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   emptyEmoji: {
-    fontSize: 48,
     marginBottom: spacing.md,
   },
   emptyTitle: {

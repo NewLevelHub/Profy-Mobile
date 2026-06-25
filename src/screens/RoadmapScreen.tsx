@@ -21,6 +21,7 @@ import type {
 } from '../types';
 import { generateRoadmap } from '../api/roadmap';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
+import { EmojiText } from '../components/common/EmojiText';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Roadmap'>;
 
@@ -58,7 +59,7 @@ function TaskCard({ task, index }: { task: RoadmapTask; index: number }) {
   return (
     <View style={styles.taskCard}>
       <View style={styles.taskRow}>
-        <Text style={styles.taskIcon}>{icon}</Text>
+        <EmojiText size="md" style={styles.taskIcon}>{icon}</EmojiText>
         <Text style={styles.taskText}>{task.text}</Text>
         <View style={[styles.priorityDot, { backgroundColor: priorityColor(task.priority) }]} />
       </View>
@@ -360,7 +361,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   taskIcon: {
-    ...typography.title,
     lineHeight: 28,
   },
   taskText: {

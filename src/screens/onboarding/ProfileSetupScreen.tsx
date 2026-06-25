@@ -16,6 +16,7 @@ import type { AppStackParamList } from '../../types';
 import { createProfile } from '../../api/profile';
 import { useProfileStore } from '../../store/profileStore';
 import SubjectCard from '../../components/common/SubjectCard';
+import { TextWithLeadingEmoji } from '../../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProfileSetup'>;
@@ -274,7 +275,9 @@ function SubjectSection({
 }) {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{emoji}  {title}</Text>
+      <TextWithLeadingEmoji emojiChar={emoji} textStyle={styles.sectionTitleText} style={styles.sectionTitle}>
+        {title}
+      </TextWithLeadingEmoji>
       <View style={styles.chipRow}>
         {SUBJECTS.map((s) => (
           <SubjectCard key={s} label={s} selected={selected.includes(s)} onPress={() => onToggle(s)} />
@@ -380,10 +383,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing['2xl'],
   },
   sectionTitle: {
+    marginBottom: spacing.md,
+  },
+  sectionTitleText: {
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.label,
     color: colors.text,
-    marginBottom: spacing.md,
   },
   chipRow: {
     flexDirection: 'row',

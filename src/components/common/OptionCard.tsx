@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import type { AgeGroup } from '../../types';
+import { EmojiText } from './EmojiText';
 import { colors, spacing, radii, fontFamily, fontSize } from '../../constants/themes/themes';
 
 const JUNIOR_EMOJI = ['⭐', '🎨', '🏃', '📖', '🌿', '🎵', '🔢', '🌍', '💡', '🎭'];
@@ -46,7 +47,7 @@ export default function OptionCard({ text, index, selected, ageGroup, onPress }:
       >
         {isJunior ? (
           <View style={[styles.indicator, styles.indicatorJunior, selected && styles.indicatorSelected]}>
-            <Text style={[styles.indicatorEmoji]}>{JUNIOR_EMOJI[index % JUNIOR_EMOJI.length]}</Text>
+            <EmojiText size="sm" style={styles.indicatorEmoji}>{JUNIOR_EMOJI[index % JUNIOR_EMOJI.length]}</EmojiText>
           </View>
         ) : (
           <View style={[styles.indicator, styles.indicatorSenior, selected && styles.indicatorSelected]}>
@@ -117,9 +118,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
-  indicatorEmoji: {
-    fontSize: 22,
-  },
+  indicatorEmoji: {},
   indicatorLetter: {
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.caption,

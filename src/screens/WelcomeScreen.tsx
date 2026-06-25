@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useAuthStore } from '../store/authStore';
 import type { AppStackParamList } from '../types';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows, fontFamily } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Welcome'>;
@@ -62,7 +63,7 @@ export default function WelcomeScreen({ navigation }: Props) {
           <Animated.Text
             style={[styles.wave, { transform: [{ rotate: waveInterpolate }] }]}
           >
-            👋
+            <EmojiText size="hero" style={styles.waveEmoji}>👋</EmojiText>
           </Animated.Text>
           <Text style={styles.greeting}>{greeting}</Text>
           <Text style={styles.sub}>
@@ -78,7 +79,7 @@ export default function WelcomeScreen({ navigation }: Props) {
               <View style={styles.stepBadge}>
                 <Text style={styles.stepNum}>{step.num}</Text>
               </View>
-              <Text style={styles.stepEmoji}>{step.emoji}</Text>
+              <EmojiText size="md" style={styles.stepEmoji}>{step.emoji}</EmojiText>
               <View style={styles.stepTexts}>
                 <Text style={styles.stepLabel}>{step.label}</Text>
                 <Text style={styles.stepDesc}>{step.desc}</Text>
@@ -93,7 +94,10 @@ export default function WelcomeScreen({ navigation }: Props) {
           onPress={() => navigation.replace('ProfileSetup')}
           activeOpacity={0.82}
         >
-          <Text style={styles.ctaText}>Поехали! 🚀</Text>
+          <Text style={styles.ctaText}>
+            {'Поехали! '}
+            <EmojiText size="sm">🚀</EmojiText>
+          </Text>
         </TouchableOpacity>
       </Animated.View>
     </SafeAreaView>
@@ -120,10 +124,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   wave: {
-    fontSize: 60,
     marginBottom: spacing.xs,
     // transform origin workaround: shift right so rotation pivots from wrist
     transformOrigin: 'bottom right',
+  },
+  waveEmoji: {
+    fontSize: 60,
+    lineHeight: 72,
   },
   greeting: {
     fontFamily: fontFamily.black,
@@ -182,7 +189,6 @@ const styles = StyleSheet.create({
     color: colors.primaryDeep,
   },
   stepEmoji: {
-    fontSize: 26,
     flexShrink: 0,
   },
   stepTexts: {

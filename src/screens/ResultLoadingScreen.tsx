@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types';
 import { generateReport } from '../api/result';
 import { useResultStore } from '../store/resultStore';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ResultLoading'>;
@@ -90,7 +91,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
-        <Text style={styles.emoji}>{'✨'}</Text>
+        <EmojiText size="xl" style={styles.emoji}>{'✨'}</EmojiText>
         <Animated.View style={{ opacity: textOpacity }}>
           <Text style={styles.message}>{MESSAGES[messageIndex]}</Text>
         </Animated.View>
@@ -119,9 +120,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['3xl'],
   },
   emoji: {
-    ...typography.display,
-    fontSize: 64,
-    lineHeight: 80,
     textAlign: 'center',
     marginBottom: spacing['3xl'],
   },

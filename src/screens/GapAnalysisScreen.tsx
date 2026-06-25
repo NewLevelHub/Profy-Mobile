@@ -11,6 +11,7 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, GapAnalysisResponse, GapItem } from '../types';
 import { getGapAnalysis } from '../api/university';
+import { EmojiPrefixText, TextWithLeadingEmoji } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'GapAnalysis'>;
@@ -69,7 +70,13 @@ function GapSection({ title, items, bgColor, borderColor, textColor, icon }: Sec
   if (items.length === 0) return null;
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionLabel}>{`${icon} ${title}`}</Text>
+      <TextWithLeadingEmoji
+        emojiChar={icon}
+        textStyle={styles.sectionLabelText}
+        style={styles.sectionLabel}
+      >
+        {title}
+      </TextWithLeadingEmoji>
       {items.map((item, i) => (
         <View key={i} style={[styles.itemCard, { backgroundColor: bgColor, borderColor }]}>
           <Text style={[styles.itemRequirement, { color: textColor }]}>{item.requirement}</Text>
@@ -191,7 +198,9 @@ export default function GapAnalysisScreen({ route, navigation }: Props) {
 
           {/* CTA */}
           <TouchableOpacity style={styles.ctaBtn} onPress={handleBuildPlan} activeOpacity={0.8}>
-            <Text style={styles.ctaBtnText}>{'🗺️ Построить план подготовки'}</Text>
+            <EmojiPrefixText emojiChar="🗺️" textStyle={styles.ctaBtnText}>
+              Построить план подготовки
+            </EmojiPrefixText>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -287,9 +296,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing['2xl'],
   },
   sectionLabel: {
+    marginBottom: spacing.md,
+  },
+  sectionLabelText: {
     ...typography.bodyStrong,
     color: colors.text,
-    marginBottom: spacing.md,
   },
   itemCard: {
     borderRadius: radii.md,

@@ -3,6 +3,7 @@ import { Animated, View, Text, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, fontFamily, fontSize } from '../constants/themes/themes';
 
 type Props = {
@@ -61,7 +62,7 @@ export default function SplashScreen({ navigation }: Props) {
         ]}
       >
         <View style={styles.logoBubble}>
-          <Text style={styles.logoEmoji}>🎯</Text>
+          <EmojiText size="lg" style={styles.logoEmoji}>🎯</EmojiText>
         </View>
         <Text style={styles.brandName}>Profy</Text>
         <Text style={styles.tagline}>Твой путь к будущему</Text>
@@ -96,6 +97,7 @@ const styles = StyleSheet.create({
   },
   logoEmoji: {
     fontSize: 44,
+    lineHeight: 52,
   },
   brandName: {
     fontFamily: fontFamily.black,

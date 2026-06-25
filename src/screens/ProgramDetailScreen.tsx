@@ -12,6 +12,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ProgramDetail } from '../types';
 import { getProgramDetail } from '../api/university';
 import { useAssessmentStore } from '../store/assessmentStore';
+import { EmojiPrefixText, TextWithLeadingEmoji } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProgramDetail'>;
@@ -153,7 +154,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Description */}
           {(program.description ?? '').length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'📋 Описание'}</Text>
+              <TextWithLeadingEmoji emojiChar="📋" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Описание
+              </TextWithLeadingEmoji>
               <Text style={styles.bodyText}>{program.description}</Text>
             </View>
           )}
@@ -161,7 +164,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Who it's for */}
           {(program.who_its_for ?? '').length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'🎯 Для кого'}</Text>
+              <TextWithLeadingEmoji emojiChar="🎯" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Для кого
+              </TextWithLeadingEmoji>
               <View style={styles.highlightCard}>
                 <Text style={styles.highlightText}>{program.who_its_for}</Text>
               </View>
@@ -171,7 +176,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Career options */}
           {(program.career_options ?? []).length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'💼 Карьерные пути'}</Text>
+              <TextWithLeadingEmoji emojiChar="💼" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Карьерные пути
+              </TextWithLeadingEmoji>
               <View style={styles.chipWrap}>
                 {(program.career_options ?? []).map((career, i) => (
                   <View key={i} style={styles.chip}>
@@ -185,7 +192,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Requirements */}
           {Object.keys(program.requirements ?? {}).length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'📝 Требования'}</Text>
+              <TextWithLeadingEmoji emojiChar="📝" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Требования
+              </TextWithLeadingEmoji>
               <View style={styles.tableCard}>
                 {renderRequirements(program.requirements ?? {})}
               </View>
@@ -195,7 +204,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Deadlines */}
           {Object.keys(program.deadlines ?? {}).length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'📅 Дедлайны'}</Text>
+              <TextWithLeadingEmoji emojiChar="📅" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Дедлайны
+              </TextWithLeadingEmoji>
               <View style={styles.tableCard}>
                 {renderDeadlines(program.deadlines ?? {})}
               </View>
@@ -205,7 +216,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
           {/* Grants */}
           {(program.grants ?? []).length > 0 && (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>{'🎓 Гранты и стипендии'}</Text>
+              <TextWithLeadingEmoji emojiChar="🎓" textStyle={styles.sectionLabelText} style={styles.sectionLabel}>
+                Гранты и стипендии
+              </TextWithLeadingEmoji>
               {(program.grants ?? []).map((grant, i) => (
                 <View key={i} style={styles.listRow}>
                   <Text style={styles.listBullet}>{'•'}</Text>
@@ -222,7 +235,9 @@ export default function ProgramDetailScreen({ route, navigation }: Props) {
             activeOpacity={0.8}
             disabled={assessmentId === null}
           >
-            <Text style={styles.ctaBtnText}>{'🔍 Проверить мои шансы'}</Text>
+            <EmojiPrefixText emojiChar="🔍" textStyle={styles.ctaBtnText}>
+              Проверить мои шансы
+            </EmojiPrefixText>
           </TouchableOpacity>
           {assessmentId === null && (
             <Text style={styles.ctaHint}>
@@ -323,9 +338,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing['2xl'],
   },
   sectionLabel: {
+    marginBottom: spacing.md,
+  },
+  sectionLabelText: {
     ...typography.bodyStrong,
     color: colors.text,
-    marginBottom: spacing.md,
   },
   bodyText: {
     ...typography.body,

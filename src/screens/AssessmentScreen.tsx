@@ -23,6 +23,7 @@ import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
 import BlockRoadmap from '../components/common/BlockRoadmap';
 import ConfettiBlast from '../components/common/ConfettiBlast';
+import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
 import { ALL_BLOCKS, BLOCK_NAMES, BLOCK_DESCRIPTIONS } from '../constants/blocks';
 
@@ -261,7 +262,7 @@ export default function AssessmentScreen({ navigation }: Props) {
                 { opacity: praiseOpacity, transform: [{ scale: praiseScale }] },
               ]}
             >
-              <Text style={styles.praiseEmoji}>{'⭐'}</Text>
+              <EmojiText size="hero" style={styles.praiseEmoji}>{'⭐'}</EmojiText>
               <Text style={styles.praiseTitle}>{praiseMessage.title}</Text>
               <Text style={styles.praiseSubtitle}>{praiseMessage.subtitle}</Text>
             </Animated.View>
@@ -564,9 +565,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['3xl'],
   },
   praiseEmoji: {
-    ...typography.display,
-    fontSize: 72,
-    lineHeight: 88,
     textAlign: 'center',
     marginBottom: spacing['2xl'],
   },
