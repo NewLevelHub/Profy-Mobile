@@ -129,10 +129,15 @@ export default function GoalSelectionScreen({ navigation }: Props) {
         </Text>
 
         <View style={styles.roadmapCard}>
-          <Text style={styles.roadmapHint}>
-            {`Впереди ${ageGroup === 'senior' ? '7–8' : '7'} блоков`}
-          </Text>
-          <BlockRoadmap currentBlock={-1} goal={null} />
+          <View style={styles.roadmapCardHeader}>
+            <Text style={styles.roadmapHint}>
+              {`Впереди ${ageGroup === 'senior' ? '8' : '7'} блоков`}
+            </Text>
+            <View style={styles.roadmapBadge}>
+              <Text style={styles.roadmapBadgeText}>{'~20 мин'}</Text>
+            </View>
+          </View>
+          <BlockRoadmap currentBlock={-1} goal={null} previewMode />
         </View>
 
         {visibleCards.map((card) => (
@@ -213,7 +218,8 @@ const styles = StyleSheet.create({
   },
   scroll: {
     padding: spacing['2xl'],
-    paddingTop: 48,
+    paddingTop: 52,
+    paddingBottom: spacing['3xl'],
   },
   heading: {
     ...typography.h1,
@@ -221,30 +227,49 @@ const styles = StyleSheet.create({
   },
   subheading: {
     ...typography.body,
+    color: colors.textSecondary,
     marginBottom: spacing['2xl'],
   },
   roadmapCard: {
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: spacing['2xl'],
     overflow: 'hidden',
+    ...shadows.card,
+  },
+  roadmapCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xs,
   },
   roadmapHint: {
+    ...typography.bodyStrong,
+    color: colors.text,
+  },
+  roadmapBadge: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  roadmapBadgeText: {
     ...typography.caption,
-    color: colors.textSecondary,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xs,
+    color: colors.primaryDeep,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     padding: spacing.lg,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     ...shadows.card,
   },
   cardIconWrap: {
@@ -254,23 +279,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   cardEmoji: {},
   cardBody: {
     flex: 1,
     marginLeft: spacing.lg,
+    marginRight: spacing.sm,
   },
   cardTitle: {
     ...typography.bodyStrong,
   },
   cardSubtitle: {
-    ...typography.caption,
+    ...typography.small,
+    color: colors.textSecondary,
     marginTop: spacing.xs,
   },
   cardArrow: {
-    fontSize: 24,
+    fontSize: 22,
     color: colors.textMuted,
-    marginLeft: spacing.sm,
   },
   cardLoader: {
     marginTop: spacing.lg,

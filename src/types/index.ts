@@ -58,7 +58,14 @@ export type AuthStackParamList = {
   Register: undefined;
 };
 
-export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'Home';
+export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'MainTabs';
+
+export type AppTabParamList = {
+  Home: undefined;
+  Result: undefined;
+  Roadmap: undefined;
+  Profile: undefined;
+};
 
 export type AppStackParamList = {
   Welcome: undefined;
@@ -66,15 +73,13 @@ export type AppStackParamList = {
   ArtifactsSetup: undefined;
   GoalSelection: undefined;
   Assessment: undefined;
-  Home: undefined;
   Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
   ResultLoading: { assessmentId: string };
-  Result: undefined;
+  MainTabs: { screen?: keyof AppTabParamList } | undefined;
   DirectionDetail: { direction: DirectionResult };
   UniversityList: { directionSlug: string };
   ProgramDetail: { programId: string; programName: string; universityName: string };
   GapAnalysis: { programId: string; assessmentId: string; programName: string; universityName: string };
-  Roadmap: { assessmentId: string; subtitle?: string };
 };
 
 // ─── Roadmap domain ────────────────────────────────────────────────────────────

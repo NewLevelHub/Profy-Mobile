@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, Text, View, StyleSheet } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import type { ComponentProps } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
 import { useAssessmentStore } from '../store/assessmentStore';
 import { getProfile } from '../api/profile';
-import { RootStackParamList, AuthStackParamList, AppStackParamList } from '../types';
+import {
+  RootStackParamList,
+  AuthStackParamList,
+  AppStackParamList,
+  AppTabParamList,
+} from '../types';
 import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import HomeScreen from '../screens/HomeScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import ProfileSetupScreen from '../screens/onboarding/ProfileSetupScreen';
 import ArtifactsSetupScreen from '../screens/onboarding/ArtifactsSetupScreen';
 import GoalSelectionScreen from '../screens/onboarding/GoalSelectionScreen';
@@ -24,11 +33,94 @@ import UniversityListScreen from '../screens/UniversityListScreen';
 import ProgramDetailScreen from '../screens/ProgramDetailScreen';
 import GapAnalysisScreen from '../screens/GapAnalysisScreen';
 import RoadmapScreen from '../screens/RoadmapScreen';
-import { colors } from '../constants/themes/themes';
+import { colors, fontFamily, fontSize } from '../constants/themes/themes';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
+
+const TAB_ICONS: Record<keyof AppTabParamList, { active: IoniconName; inactive: IoniconName }> = {
+  Home: { active: 'home', inactive: 'home-outline' },
+  Result: { active: 'document-text', inactive: 'document-text-outline' },
+  Roadmap: { active: 'map', inactive: 'map-outline' },
+  Profile: { active: 'person', inactive: 'person-outline' },
+};
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AppStack = createNativeStackNavigator<AppStackParamList>();
+const Tab = createBottomTabNavigator<AppTabParamList>();
+
+function TabIcon({ tab, focused }: { tab: keyof AppTabParamList; focused: boolean }) {
+  const iconColor = focused ? colors.primary : colors.textMuted;
+  const name = focused ? TAB_ICONS[tab].active : TAB_ICONS[tab].inactive;
+  return <Ionicons name={name} size={24} color={iconColor} />;
+}
+
+function TabLabel({ label, focused }: { label: string; focused: boolean }) {
+  return (
+    <Text
+      style={{
+        fontFamily: focused ? fontFamily.extrabold : fontFamily.semibold,
+        fontSize: fontSize.tiny,
+        color: focused ? colors.primary : colors.textMuted,
+        marginTop: 2,
+      }}
+    >
+      {label}
+    </Text>
+  );
+}
+
+function MainTabNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          height: 62,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarShowLabel: true,
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon tab="Home" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label="Главная" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Result"
+        component={ResultScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon tab="Result" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label="Результаты" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Roadmap"
+        component={RoadmapScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon tab="Roadmap" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label="Роадмап" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon tab="Profile" focused={focused} />,
+          tabBarLabel: ({ focused }) => <TabLabel label="Профиль" focused={focused} />,
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 function AuthNavigator() {
   return (
@@ -50,16 +142,14 @@ function AppNavigator() {
     getProfile()
       .then((p) => {
         setProfile(p);
-        setInitialRoute('Home');
+        setInitialRoute('MainTabs');
       })
       .catch((err) => {
         const status = err?.response?.status;
         if (status === 401) {
-          // Token is invalid or user no longer exists — full logout
           logout();
           resetAssessment();
           clearProfile();
-          // RootNavigator will re-render to AuthStack since token is now null
           return;
         }
         clearProfile();
@@ -86,14 +176,12 @@ function AppNavigator() {
       <AppStack.Screen name="GoalSelection" component={GoalSelectionScreen} />
       <AppStack.Screen name="Assessment" component={AssessmentScreen} />
       <AppStack.Screen name="Praise" component={PraiseScreen} />
-      <AppStack.Screen name="Home" component={HomeScreen} />
       <AppStack.Screen name="ResultLoading" component={ResultLoadingScreen} />
-      <AppStack.Screen name="Result" component={ResultScreen} />
+      <AppStack.Screen name="MainTabs" component={MainTabNavigator} />
       <AppStack.Screen name="DirectionDetail" component={DirectionDetailScreen} />
       <AppStack.Screen name="UniversityList" component={UniversityListScreen} />
       <AppStack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
       <AppStack.Screen name="GapAnalysis" component={GapAnalysisScreen} />
-      <AppStack.Screen name="Roadmap" component={RoadmapScreen} />
     </AppStack.Navigator>
   );
 }

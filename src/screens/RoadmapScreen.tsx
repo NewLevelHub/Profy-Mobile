@@ -10,20 +10,25 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type {
-  AppStackParamList,
   RoadmapHorizonKey,
   RoadmapMilestone,
   RoadmapResponse,
   RoadmapTask,
   RoadmapTaskCategory,
 } from '../types';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { generateRoadmap } from '../api/roadmap';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 import { EmojiText } from '../components/common/EmojiText';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'Roadmap'>;
+type Props = {
+  navigation: {
+    goBack: () => void;
+    canGoBack: () => boolean;
+    navigate: (screen: 'Home' | 'Result' | 'Roadmap' | 'Profile') => void;
+  };
+};
 
 const HORIZONS: { key: RoadmapHorizonKey; label: string }[] = [
   { key: 'month_1',    label: '1 месяц' },
@@ -67,8 +72,9 @@ function TaskCard({ task, index }: { task: RoadmapTask; index: number }) {
   );
 }
 
-export default function RoadmapScreen({ route, navigation }: Props) {
-  const { assessmentId, subtitle: subtitleParam } = route.params;
+export default function RoadmapScreen({ navigation }: Props) {
+  const assessmentId = useAssessmentStore((s) => s.assessmentId);
+  const hasCompletedAssessment = useAssessmentStore((s) => s.hasCompletedAssessment);
 
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,6 +83,11 @@ export default function RoadmapScreen({ route, navigation }: Props) {
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
   function loadRoadmap() {
+    if (!assessmentId) {
+      setLoading(false);
+      setError('Сначала пройди диагностику, чтобы получить план');
+      return;
+    }
     setLoading(true);
     setError(null);
     generateRoadmap(assessmentId)
@@ -106,8 +117,7 @@ export default function RoadmapScreen({ route, navigation }: Props) {
     const firstMilestone = roadmap?.milestones?.find((m) => m.horizon === 'month_1')
       ?? roadmap?.milestones?.[0];
     if (firstMilestone === undefined || firstMilestone.tasks.length === 0) return;
-    const heading = subtitleParam
-      ?? (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined)
+    const heading = (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined)
       ?? 'Мой план развития';
     const taskLines = firstMilestone.tasks
       .map((t) => `${CATEGORY_ICONS[t.category] ?? '•'} ${t.text}`)
@@ -118,25 +128,47 @@ export default function RoadmapScreen({ route, navigation }: Props) {
     });
   }
 
-  const subtitle = subtitleParam
-    ?? (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined);
+  const subtitle = roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined;
 
   const currentMilestone: RoadmapMilestone | undefined =
     roadmap?.milestones?.find((m) => m.horizon === activeHorizon);
 
+  if (!hasCompletedAssessment) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Text style={styles.noAssessmentIcon}>{'🗺️'}</Text>
+          <Text style={styles.noAssessmentTitle}>{'План недоступен'}</Text>
+          <Text style={styles.noAssessmentText}>
+            {'Сначала требуется пройти тестирование, чтобы получить персональный план развития'}
+          </Text>
+          <TouchableOpacity
+            style={styles.goHomeBtn}
+            onPress={() => navigation.navigate('Home')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.goHomeBtnText}>{'Перейти на главную'}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       {/* Nav */}
-      <View style={styles.navBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backIcon}>{'←'}</Text>
-          <Text style={styles.backLabel}>{'Назад'}</Text>
-        </TouchableOpacity>
-      </View>
+      {navigation.canGoBack() && (
+        <View style={styles.navBar}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backIcon}>{'←'}</Text>
+            <Text style={styles.backLabel}>{'Назад'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Screen header */}
       <View style={styles.header}>
@@ -300,6 +332,31 @@ const styles = StyleSheet.create({
     ...shadows.button,
   },
   retryBtnText: {
+    ...typography.label,
+    color: colors.onPrimary,
+  },
+  noAssessmentIcon: {
+    fontSize: 52,
+    lineHeight: 64,
+  },
+  noAssessmentTitle: {
+    ...typography.h1,
+    color: colors.text,
+    textAlign: 'center',
+  },
+  noAssessmentText: {
+    ...typography.body,
+    color: colors.textMuted,
+    textAlign: 'center',
+  },
+  goHomeBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    ...shadows.button,
+  },
+  goHomeBtnText: {
     ...typography.label,
     color: colors.onPrimary,
   },

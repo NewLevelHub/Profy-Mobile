@@ -8,9 +8,11 @@ interface AssessmentState {
   goal: AssessmentGoal | null;
   currentBlock: number;
   completedBlocks: Set<string>;
+  hasCompletedAssessment: boolean;
   setAssessment: (assessmentId: string, goal: AssessmentGoal, currentBlock: number) => void;
   advanceBlock: () => void;
   markBlockCompleted: (block: string) => void;
+  completeAssessment: () => void;
   resetAssessment: () => void;
 }
 
@@ -21,13 +23,15 @@ export const useAssessmentStore = create<AssessmentState>()(
       goal: null,
       currentBlock: 0,
       completedBlocks: new Set<string>(),
+      hasCompletedAssessment: false,
       setAssessment: (assessmentId, goal, currentBlock) =>
         set({ assessmentId, goal, currentBlock }),
       advanceBlock: () => set((s) => ({ currentBlock: s.currentBlock + 1 })),
       markBlockCompleted: (block) =>
         set((s) => ({ completedBlocks: new Set(s.completedBlocks).add(block) })),
+      completeAssessment: () => set({ hasCompletedAssessment: true }),
       resetAssessment: () =>
-        set({ assessmentId: null, goal: null, currentBlock: 0, completedBlocks: new Set() }),
+        set({ assessmentId: null, goal: null, currentBlock: 0, completedBlocks: new Set(), hasCompletedAssessment: false }),
     }),
     {
       name: 'assessment-storage',
@@ -37,6 +41,7 @@ export const useAssessmentStore = create<AssessmentState>()(
         assessmentId: state.assessmentId,
         goal: state.goal,
         currentBlock: state.currentBlock,
+        hasCompletedAssessment: state.hasCompletedAssessment,
       }),
     },
   ),

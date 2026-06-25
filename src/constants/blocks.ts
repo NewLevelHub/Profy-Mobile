@@ -22,6 +22,17 @@ export const BLOCK_NAMES: Record<AssessmentBlock, string> = {
   university: 'Университет',
 };
 
+export const BLOCK_EMOJIS: Record<AssessmentBlock, string> = {
+  interests: '✨',
+  thinking: '🧩',
+  personality: '🦋',
+  motivation: '🚀',
+  academic: '📚',
+  directions: '🧭',
+  goal_clarification: '🎯',
+  university: '🎓',
+};
+
 export const BLOCK_DESCRIPTIONS: Record<AssessmentBlock, string> = {
   interests: 'Узнаем, что тебя по-настоящему интересует',
   thinking: 'Разберёмся, как ты думаешь и решаешь задачи',

@@ -5,6 +5,7 @@ import type { AppStackParamList } from '../types';
 import { generateReport } from '../api/result';
 import { useResultStore } from '../store/resultStore';
 import { EmojiText } from '../components/common/EmojiText';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { colors, typography, spacing, radii } from '../constants/themes/themes';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ResultLoading'>;
@@ -24,6 +25,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isMountedRef = useRef(true);
   const setReport = useResultStore((s) => s.setReport);
+  const completeAssessment = useAssessmentStore((s) => s.completeAssessment);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -61,7 +63,8 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
-        navigation.replace('Result');
+        completeAssessment();
+        navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {
           setError('Не удалось получить результат. Попробуй ещё раз.');
@@ -78,7 +81,8 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
-        navigation.replace('Result');
+        completeAssessment();
+        navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {
           setError('Не удалось получить результат. Попробуй ещё раз.');
