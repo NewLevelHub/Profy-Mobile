@@ -153,6 +153,12 @@ export default function LoginScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
 
+          <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
+            <Text style={styles.linkText}>
+              <Text style={styles.linkAccent}>Забыли пароль?</Text>
+            </Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Register')}>
             <Text style={styles.linkText}>
               Нет аккаунта?{' '}

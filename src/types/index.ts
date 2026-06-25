@@ -57,6 +57,9 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   VerifyEmail: { email: string };
+  ForgotPassword: undefined;
+  VerifyResetCode: { email: string };
+  ResetPassword: { email: string; code: string };
 };
 
 export interface RegisterResponse {

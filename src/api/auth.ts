@@ -31,3 +31,15 @@ export async function verifyEmail(email: string, code: string): Promise<TokenRes
 export async function resendVerificationCode(email: string): Promise<void> {
   await apiClient.post('/api/v1/auth/resend-verification', { email });
 }
+
+export async function forgotPassword(email: string): Promise<void> {
+  await apiClient.post('/api/v1/auth/forgot-password', { email });
+}
+
+export async function verifyResetCode(email: string, code: string): Promise<void> {
+  await apiClient.post('/api/v1/auth/verify-reset-code', { email, code });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
+  await apiClient.post('/api/v1/auth/reset-password', { email, code, new_password: newPassword });
+}
