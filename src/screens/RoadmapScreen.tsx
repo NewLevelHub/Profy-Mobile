@@ -10,19 +10,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type {
-  AppStackParamList,
   RoadmapHorizonKey,
   RoadmapMilestone,
   RoadmapResponse,
   RoadmapTask,
   RoadmapTaskCategory,
 } from '../types';
+import { useAssessmentStore } from '../store/assessmentStore';
 import { generateRoadmap } from '../api/roadmap';
 import { colors, typography, spacing, radii, shadows } from '../constants/themes/themes';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'Roadmap'>;
+type Props = {
+  navigation: { goBack: () => void; canGoBack: () => boolean };
+};
 
 const HORIZONS: { key: RoadmapHorizonKey; label: string }[] = [
   { key: 'month_1',    label: '1 месяц' },
@@ -66,8 +67,8 @@ function TaskCard({ task, index }: { task: RoadmapTask; index: number }) {
   );
 }
 
-export default function RoadmapScreen({ route, navigation }: Props) {
-  const { assessmentId, subtitle: subtitleParam } = route.params;
+export default function RoadmapScreen({ navigation }: Props) {
+  const assessmentId = useAssessmentStore((s) => s.assessmentId);
 
   const [roadmap, setRoadmap] = useState<RoadmapResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -76,6 +77,11 @@ export default function RoadmapScreen({ route, navigation }: Props) {
   const toastOpacity = useRef(new Animated.Value(0)).current;
 
   function loadRoadmap() {
+    if (!assessmentId) {
+      setLoading(false);
+      setError('Сначала пройди диагностику, чтобы получить план');
+      return;
+    }
     setLoading(true);
     setError(null);
     generateRoadmap(assessmentId)
@@ -105,8 +111,7 @@ export default function RoadmapScreen({ route, navigation }: Props) {
     const firstMilestone = roadmap?.milestones?.find((m) => m.horizon === 'month_1')
       ?? roadmap?.milestones?.[0];
     if (firstMilestone === undefined || firstMilestone.tasks.length === 0) return;
-    const heading = subtitleParam
-      ?? (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined)
+    const heading = (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined)
       ?? 'Мой план развития';
     const taskLines = firstMilestone.tasks
       .map((t) => `${CATEGORY_ICONS[t.category] ?? '•'} ${t.text}`)
@@ -117,8 +122,7 @@ export default function RoadmapScreen({ route, navigation }: Props) {
     });
   }
 
-  const subtitle = subtitleParam
-    ?? (roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined);
+  const subtitle = roadmap?.goal ? GOAL_LABELS[roadmap.goal] : undefined;
 
   const currentMilestone: RoadmapMilestone | undefined =
     roadmap?.milestones?.find((m) => m.horizon === activeHorizon);
@@ -126,16 +130,18 @@ export default function RoadmapScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       {/* Nav */}
-      <View style={styles.navBar}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backIcon}>{'←'}</Text>
-          <Text style={styles.backLabel}>{'Назад'}</Text>
-        </TouchableOpacity>
-      </View>
+      {navigation.canGoBack() && (
+        <View style={styles.navBar}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backIcon}>{'←'}</Text>
+            <Text style={styles.backLabel}>{'Назад'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Screen header */}
       <View style={styles.header}>

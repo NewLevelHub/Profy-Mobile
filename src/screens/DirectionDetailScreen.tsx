@@ -27,7 +27,7 @@ export default function DirectionDetailScreen({ route, navigation }: Props) {
     Alert.alert(
       'Направление выбрано!',
       `Ты выбрал${'​'}а направление «${direction.name}». Продолжай исследовать свои возможности.`,
-      [{ text: 'Отлично!', onPress: () => navigation.navigate('Home') }],
+      [{ text: 'Отлично!', onPress: () => navigation.navigate('MainTabs') }],
     );
   }
 

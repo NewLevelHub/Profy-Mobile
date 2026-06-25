@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { AppStackParamList, DirectionResult } from '../types';
+import type { AppTabParamList, AppStackParamList, DirectionResult } from '../types';
 import { useResultStore } from '../store/resultStore';
 import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
@@ -20,7 +22,10 @@ import {
   shadows,
 } from '../constants/themes/themes';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'Result'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Result'>,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 // ─── Label maps ────────────────────────────────────────────────────────────────
 

@@ -15,6 +15,8 @@ interface BlockRoadmapProps {
   currentBlock: number;
   goal: AssessmentGoal | null;
   compact?: boolean;
+  /** When true, locked circles render with soft-purple instead of gray (used on goal selection screen). */
+  previewMode?: boolean;
 }
 
 type NodeState = 'completed' | 'current' | 'locked';
@@ -25,7 +27,7 @@ const LINE_FULL = 18;
 const LINE_COMPACT = 12;
 const LABEL_W = 60;
 
-function BlockRoadmap({ currentBlock, goal, compact = false }: BlockRoadmapProps) {
+function BlockRoadmap({ currentBlock, goal, compact = false, previewMode = false }: BlockRoadmapProps) {
   const activeBlocks = goal === 'university' ? ALL_BLOCKS : ALL_BLOCKS.slice(0, 7);
   const nodeSize = compact ? NODE_COMPACT : NODE_FULL;
   const lineW = compact ? LINE_COMPACT : LINE_FULL;
@@ -81,14 +83,14 @@ function BlockRoadmap({ currentBlock, goal, compact = false }: BlockRoadmapProps
               { width: nodeSize, height: nodeSize, borderRadius: nodeSize / 2 },
               state === 'completed' && styles.circleCompleted,
               state === 'current' && styles.circleCurrent,
-              state === 'locked' && styles.circleLocked,
+              state === 'locked' && (previewMode ? styles.circlePreview : styles.circleLocked),
             ]}
           >
             <Text
               style={[
                 styles.circleText,
                 compact && styles.circleTextCompact,
-                state === 'locked' && styles.circleTextLocked,
+                state === 'locked' && (previewMode ? styles.circleTextPreview : styles.circleTextLocked),
               ]}
             >
               {state === 'completed' ? '✓' : String(i + 1)}
@@ -164,6 +166,9 @@ const styles = StyleSheet.create({
   circleLocked: {
     backgroundColor: colors.nodeLocked,
   },
+  circlePreview: {
+    backgroundColor: colors.primarySoft,
+  },
   circleText: {
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.caption,
@@ -174,6 +179,9 @@ const styles = StyleSheet.create({
   },
   circleTextLocked: {
     color: colors.textMuted,
+  },
+  circleTextPreview: {
+    color: colors.primaryDeep,
   },
   label: {
     ...typography.small,

@@ -7,20 +7,23 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { AppStackParamList } from '../types';
+import type { AppTabParamList, AppStackParamList } from '../types';
 import { useAuthStore } from '../store/authStore';
 import { useProfileStore } from '../store/profileStore';
 import { useAssessmentStore } from '../store/assessmentStore';
 import BlockRoadmap from '../components/common/BlockRoadmap';
 import { colors, radii, shadows, spacing, typography, fontFamily, fontSize } from '../constants/themes/themes';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'Home'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<AppTabParamList, 'Home'>,
+  NativeStackScreenProps<AppStackParamList>
+>;
 
 export default function HomeScreen({ navigation }: Props) {
-  const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
-  const clearProfile = useProfileStore((s) => s.clearProfile);
   const profile = useProfileStore((s) => s.profile);
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
   const goal = useAssessmentStore((s) => s.goal);
@@ -36,11 +39,6 @@ export default function HomeScreen({ navigation }: Props) {
     || null;
   const initial = displayName ? displayName[0].toUpperCase() : '?';
   const greeting = displayName ? `Привет, ${displayName}!` : 'Привет!';
-
-  function handleLogout() {
-    clearProfile();
-    logout();
-  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -116,10 +114,6 @@ export default function HomeScreen({ navigation }: Props) {
           </Text>
         </TouchableOpacity>
 
-        {/* Logout */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-          <Text style={styles.logoutText}>Выйти из аккаунта</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -260,13 +254,5 @@ const styles = StyleSheet.create({
   },
   ctaBtnTextSecondary: {
     color: colors.primaryDeep,
-  },
-  logoutBtn: {
-    alignItems: 'center',
-    paddingVertical: spacing.lg,
-  },
-  logoutText: {
-    ...typography.caption,
-    color: colors.textMuted,
   },
 });

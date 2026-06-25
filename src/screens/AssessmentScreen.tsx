@@ -238,7 +238,7 @@ export default function AssessmentScreen({ navigation }: Props) {
       {
         text: 'Выйти',
         style: 'destructive',
-        onPress: () => navigation.navigate('Home'),
+        onPress: () => navigation.navigate('MainTabs'),
       },
     ]);
   }

@@ -60,7 +60,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
-        navigation.replace('Result');
+        navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {
           setError('Не удалось получить результат. Попробуй ещё раз.');
@@ -77,7 +77,7 @@ export default function ResultLoadingScreen({ route, navigation }: Props) {
         const report = await generateReport(assessmentId);
         if (!isMountedRef.current) return;
         setReport(report);
-        navigation.replace('Result');
+        navigation.replace('MainTabs', { screen: 'Result' });
       } catch {
         if (isMountedRef.current) {
           setError('Не удалось получить результат. Попробуй ещё раз.');

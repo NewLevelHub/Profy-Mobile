@@ -95,7 +95,7 @@ export default function GapAnalysisScreen({ route, navigation }: Props) {
   }, [programId, assessmentId]);
 
   function handleBuildPlan() {
-    navigation.navigate('Roadmap', { assessmentId });
+    navigation.navigate('MainTabs', { screen: 'Roadmap' });
   }
 
   return (
