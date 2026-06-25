@@ -48,7 +48,7 @@ export default function RegisterScreen({ navigation }: Props) {
     setIsLoading(true);
     try {
       const { email: confirmedEmail } = await registerUser(email.trim(), password);
-      navigation.navigate('VerifyEmail', { email: confirmedEmail });
+      navigation.navigate('VerifyEmail', { email: confirmedEmail ?? email.trim() });
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;

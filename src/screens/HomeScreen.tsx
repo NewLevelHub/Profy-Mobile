@@ -49,7 +49,9 @@ export default function HomeScreen({ navigation }: Props) {
   const completedCount = Math.min(currentBlock, totalBlocks);
 
   function handleContinue() {
-    if (inProgress) {
+    if (isCompleted) {
+      navigation.navigate('Result');
+    } else if (inProgress) {
       navigation.navigate('Assessment');
     } else {
       navigation.navigate('GoalSelection');
@@ -122,13 +124,13 @@ export default function HomeScreen({ navigation }: Props) {
               <View style={styles.progressRingOuter}>
                 <View style={styles.progressRingInner}>
                   <Text style={styles.progressRingNum}>{'0'}</Text>
-                  <Text style={styles.progressRingDen}>{'/7'}</Text>
+                  <Text style={styles.progressRingDen}>{'/' + totalBlocks}</Text>
                 </View>
               </View>
               <View style={styles.heroInfo}>
                 <Text style={styles.heroTitle}>{'Твой путь'}</Text>
                 <Text style={styles.heroSubtitle}>
-                  {'7 коротких блоков — и ты получишь персональную карту профессий'}
+                  {totalBlocks + ' коротких блоков — и ты получишь персональную карту профессий'}
                 </Text>
               </View>
             </View>
@@ -142,28 +144,30 @@ export default function HomeScreen({ navigation }: Props) {
           </View>
         )}
 
-        {/* ── Quick access cards ──────────────────────────────────── */}
-        <View style={styles.quickRow}>
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Result')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.quickEmoji}>{'📋'}</Text>
-            <Text style={styles.quickTitle}>{'Результаты'}</Text>
-            <Text style={styles.quickSub}>{'Что мы узнали о тебе'}</Text>
-          </TouchableOpacity>
+        {/* ── Quick access cards — only after assessment is complete ── */}
+        {isCompleted && (
+          <View style={styles.quickRow}>
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate('Result')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.quickEmoji}>{'📋'}</Text>
+              <Text style={styles.quickTitle}>{'Результаты'}</Text>
+              <Text style={styles.quickSub}>{'Что мы узнали о тебе'}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.quickCard}
-            onPress={() => navigation.navigate('Roadmap')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.quickEmoji}>{'📘'}</Text>
-            <Text style={styles.quickTitle}>{'Роадмап'}</Text>
-            <Text style={styles.quickSub}>{'Твой план развития'}</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate('Roadmap')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.quickEmoji}>{'📘'}</Text>
+              <Text style={styles.quickTitle}>{'Роадмап'}</Text>
+              <Text style={styles.quickSub}>{'Твой план развития'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* ── Roadmap block list ──────────────────────────────────── */}
         {hasAssessment && (

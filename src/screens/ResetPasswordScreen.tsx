@@ -49,7 +49,7 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
     if (!success) return;
     const id = setTimeout(() => navigation.popToTop(), 1500);
     return () => clearTimeout(id);
-  }, [success]);
+  }, [success, navigation]);
 
   function validateNewPassword(value: string): string {
     return value.length >= MIN_PASSWORD_LENGTH

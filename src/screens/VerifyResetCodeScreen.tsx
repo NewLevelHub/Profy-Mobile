@@ -36,7 +36,7 @@ const RESEND_COOLDOWN = 60;
 
 function maskEmail(email: string): string {
   const atIndex = email.indexOf('@');
-  if (atIndex <= 1) return email;
+  if (atIndex <= 0) return email;
   return email[0] + '***' + email.slice(atIndex);
 }
 

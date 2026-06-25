@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StackActions } from '@react-navigation/native';
 import type {
   AppStackParamList,
   AssessmentBlock,
@@ -232,7 +233,7 @@ export default function AssessmentScreen({ navigation }: Props) {
         } else if (completedBlockRef.current === 0) {
           // After first block — go home so user sees progress on HomeScreen
           advanceBlock();
-          navigation.navigate('MainTabs');
+          navigation.dispatch(StackActions.replace('MainTabs'));
         } else {
           showRoadmap();
         }
