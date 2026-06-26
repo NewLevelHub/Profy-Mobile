@@ -135,7 +135,7 @@ export default function RoadmapScreen({ navigation }: Props) {
 
   if (!hasCompletedAssessment) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.center}>
           <Text style={styles.noAssessmentIcon}>{'🗺️'}</Text>
           <Text style={styles.noAssessmentTitle}>{'План недоступен'}</Text>
@@ -155,7 +155,7 @@ export default function RoadmapScreen({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       {/* Nav */}
       {navigation.canGoBack() && (
         <View style={styles.navBar}>

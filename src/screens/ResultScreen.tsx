@@ -168,7 +168,7 @@ export default function ResultScreen({ navigation }: Props) {
 
   if (!hasCompletedAssessment) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.emptyCenter}>
           <Text style={styles.emptyIcon}>{'📋'}</Text>
           <Text style={styles.emptyTitle}>{'Результатов пока нет'}</Text>
@@ -189,7 +189,7 @@ export default function ResultScreen({ navigation }: Props) {
 
   if (loadingReport || !report) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.emptyCenter}>
           {loadError !== null ? (
             <>
@@ -243,7 +243,7 @@ export default function ResultScreen({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
