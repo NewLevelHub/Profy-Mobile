@@ -7,7 +7,9 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
@@ -79,12 +81,12 @@ export default function VerifyEmailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={undefined}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        automaticallyAdjustKeyboardInsets
       >
         <View style={styles.header}>
           <Text style={styles.title}>Подтверждение почты</Text>
@@ -140,18 +142,22 @@ export default function VerifyEmailScreen({ navigation, route }: Props) {
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  safe: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  flex: {
+    flex: 1,
   },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: spacing['2xl'],
-    paddingTop: 80,
+    paddingTop: spacing['3xl'],
     paddingBottom: spacing['3xl'],
   },
   header: {

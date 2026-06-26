@@ -8,7 +8,9 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   ScrollView,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
@@ -70,12 +72,12 @@ export default function LoginScreen({ navigation }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={undefined}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        automaticallyAdjustKeyboardInsets
       >
         {/* Brand */}
         <View style={styles.brand}>
@@ -166,18 +168,22 @@ export default function LoginScreen({ navigation }: Props) {
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: {
+  safe: {
     flex: 1,
     backgroundColor: colors.bg,
+  },
+  flex: {
+    flex: 1,
   },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: spacing['2xl'],
-    paddingTop: 72,
+    paddingTop: spacing['2xl'],
     paddingBottom: spacing['3xl'],
   },
   brand: {

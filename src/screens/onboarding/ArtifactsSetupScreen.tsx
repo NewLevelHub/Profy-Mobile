@@ -10,7 +10,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList, ArtifactItem } from '../../types';
 import { saveArtifacts } from '../../api/artifacts';
@@ -48,6 +48,7 @@ function addTag(
 }
 
 export default function ArtifactsSetupScreen({ navigation }: Props) {
+  const { bottom } = useSafeAreaInsets();
   const [hobbies, setHobbies] = useState<string[]>([]);
   const [clubs, setClubs] = useState<string[]>([]);
   const [achievements, setAchievements] = useState<string[]>([]);
@@ -102,7 +103,7 @@ export default function ArtifactsSetupScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
 
         {/* ── Header ───────────────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -195,7 +196,7 @@ export default function ArtifactsSetupScreen({ navigation }: Props) {
         </ScrollView>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(spacing['2xl'], bottom + spacing.md) }]}>
           <TouchableOpacity style={styles.skipBtn} onPress={handleSkip} activeOpacity={0.75}>
             <Text style={styles.skipBtnText}>Пропустить</Text>
           </TouchableOpacity>
@@ -424,7 +425,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing.md,
-    paddingBottom: spacing['2xl'],
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,

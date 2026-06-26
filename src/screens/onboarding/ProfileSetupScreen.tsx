@@ -10,7 +10,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../types';
 import { createProfile } from '../../api/profile';
@@ -36,6 +36,7 @@ function toggle(list: string[], item: string): string[] {
 }
 
 export default function ProfileSetupScreen({ navigation }: Props) {
+  const { bottom } = useSafeAreaInsets();
   const setProfile = useProfileStore((s) => s.setProfile);
 
   const [step, setStep] = useState(1);
@@ -105,7 +106,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
 
         {/* ── Progress header ───────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -226,7 +227,7 @@ export default function ProfileSetupScreen({ navigation }: Props) {
         </ScrollView>
 
         {/* ── Footer ───────────────────────────────────────────────────── */}
-        <View style={styles.footer}>
+        <View style={[styles.footer, { paddingBottom: Math.max(spacing['2xl'], bottom + spacing.md) }]}>
           {step > 1 && (
             <TouchableOpacity style={styles.backBtn} onPress={handleBack} activeOpacity={0.75}>
               <Text style={styles.backBtnText}>Назад</Text>
@@ -408,7 +409,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing['2xl'],
     paddingTop: spacing.md,
-    paddingBottom: spacing['2xl'],
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
