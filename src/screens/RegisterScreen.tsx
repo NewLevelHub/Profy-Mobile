@@ -11,9 +11,14 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
-import { registerUser } from '../api/auth';
+import { registerUser, loginWithGoogle } from '../api/auth';
+import { useAuthStore } from '../store/authStore';
 import { AuthStackParamList } from '../types';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
+import GoogleSignInButton from '../components/common/GoogleSignInButton';
+import Toast from '../components/common/Toast';
+import { useToast } from '../hooks/useToast';
+import { signInWithGoogle, isErrorWithCode, statusCodes } from '../services/googleAuth';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Register'>;
@@ -28,12 +33,15 @@ function validatePassword(password: string): string {
 }
 
 export default function RegisterScreen({ navigation }: Props) {
+  const login = useAuthStore((s) => s.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [formError, setFormError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { toastMessage, showToast, hideToast } = useToast();
 
   async function handleSubmit() {
     const eErr = validateEmail(email);
@@ -66,85 +74,113 @@ export default function RegisterScreen({ navigation }: Props) {
     }
   }
 
+  async function handleGoogleSignIn() {
+    setIsGoogleLoading(true);
+    try {
+      const idToken = await signInWithGoogle();
+      const result = await loginWithGoogle(idToken);
+      login(result.access_token, { id: result.user_id, email: '', name: '' });
+      if (result.is_new_user) {
+        showToast('Добро пожаловать! Аккаунт создан');
+      }
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code === statusCodes.SIGN_IN_CANCELLED) return;
+      showToast('Не удалось войти через Google, попробуйте позже');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }
+
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={undefined}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        automaticallyAdjustKeyboardInsets
-      >
-        {/* Brand */}
-        <View style={styles.brand}>
-          <View style={styles.iconWrapper}>
-            <View style={styles.iconBox}>
-              <Text style={styles.iconLetter}>P</Text>
+    <View style={styles.flex}>
+      <KeyboardAvoidingView style={styles.flex} behavior={undefined}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          automaticallyAdjustKeyboardInsets
+        >
+          {/* Brand */}
+          <View style={styles.brand}>
+            <View style={styles.iconWrapper}>
+              <View style={styles.iconBox}>
+                <Text style={styles.iconLetter}>P</Text>
+              </View>
+              <View style={styles.badge}>
+                <Text style={styles.badgeStar}>✦</Text>
+              </View>
             </View>
-            <View style={styles.badge}>
-              <Text style={styles.badgeStar}>✦</Text>
-            </View>
+            <Text style={styles.brandName}>Profy</Text>
+            <Text style={styles.brandTagline}>Найди дело, которое тебе по душе</Text>
           </View>
-          <Text style={styles.brandName}>Profy</Text>
-          <Text style={styles.brandTagline}>Найди дело, которое тебе по душе</Text>
-        </View>
 
-        {/* Form + Link */}
-        <View>
-          <View style={styles.form}>
-            <Text style={styles.formTitle}>Регистрация</Text>
+          {/* Form + Google + Link */}
+          <View>
+            <View style={styles.form}>
+              <Text style={styles.formTitle}>Регистрация</Text>
 
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={[styles.input, emailError ? styles.inputError : null]}
-                placeholder="Электронная почта"
-                placeholderTextColor={colors.textMuted}
-                value={email}
-                onChangeText={(v) => { setEmail(v); setEmailError(''); }}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-              />
-              {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={[styles.input, emailError ? styles.inputError : null]}
+                  placeholder="Электронная почта"
+                  placeholderTextColor={colors.textMuted}
+                  value={email}
+                  onChangeText={(v) => { setEmail(v); setEmailError(''); }}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  autoComplete="email"
+                />
+                {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <TextInput
+                  style={[styles.input, passwordError ? styles.inputError : null]}
+                  placeholder="Пароль"
+                  placeholderTextColor={colors.textMuted}
+                  value={password}
+                  onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
+                  secureTextEntry
+                  autoComplete="new-password"
+                />
+                {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+              </View>
+
+              {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+
+              <TouchableOpacity
+                style={[styles.button, isLoading && styles.buttonDisabled]}
+                onPress={handleSubmit}
+                disabled={isLoading}
+                activeOpacity={0.85}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={colors.onPrimary} />
+                ) : (
+                  <Text style={styles.buttonText}>Зарегистрироваться</Text>
+                )}
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.inputWrapper}>
-              <TextInput
-                style={[styles.input, passwordError ? styles.inputError : null]}
-                placeholder="Пароль"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
-                secureTextEntry
-                autoComplete="new-password"
-              />
-              {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>или</Text>
+              <View style={styles.dividerLine} />
             </View>
 
-            {formError ? <Text style={styles.formError}>{formError}</Text> : null}
+            <GoogleSignInButton onPress={handleGoogleSignIn} isLoading={isGoogleLoading} />
 
-            <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
-              onPress={handleSubmit}
-              disabled={isLoading}
-              activeOpacity={0.85}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={colors.onPrimary} />
-              ) : (
-                <Text style={styles.buttonText}>Зарегистрироваться</Text>
-              )}
+            <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.linkText}>
+                Уже есть аккаунт?{' '}
+                <Text style={styles.linkAccent}>Войти</Text>
+              </Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.link} onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>
-              Уже есть аккаунт?{' '}
-              <Text style={styles.linkAccent}>Войти</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <Toast message={toastMessage} onHide={hideToast} />
+    </View>
   );
 }
 
@@ -260,6 +296,21 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.label,
     color: colors.onPrimary,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    paddingHorizontal: spacing.sm,
   },
   link: {
     alignItems: 'center',
