@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -50,7 +50,9 @@ export default function HomeScreen({ navigation }: Props) {
   const completedCount = Math.min(currentBlock, totalBlocks);
 
   function handleContinue() {
-    if (inProgress) {
+    if (isCompleted) {
+      navigation.navigate('ResultLoading', { assessmentId: assessmentId! });
+    } else if (inProgress) {
       navigation.navigate('Assessment');
     } else {
       navigation.navigate('GoalSelection');
@@ -110,7 +112,7 @@ export default function HomeScreen({ navigation }: Props) {
               activeOpacity={0.85}
             >
               <Text style={styles.heroBtnText}>
-                {isCompleted ? 'Смотреть результат' : 'Продолжить тест'}
+                {isCompleted ? 'Обновить результат' : 'Продолжить тест'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -209,11 +211,21 @@ export default function HomeScreen({ navigation }: Props) {
                     </View>
 
                     {/* Card */}
-                    <View
+                    <TouchableOpacity
                       style={[
                         styles.blockCard,
                         isBlockCurrent && styles.blockCardCurrent,
+                        isBlockCompleted && styles.blockCardCompleted,
                       ]}
+                      onPress={
+                        isBlockCurrent
+                          ? handleContinue
+                          : isBlockCompleted
+                          ? () => navigation.navigate('Assessment', { retakeBlockIndex: index })
+                          : undefined
+                      }
+                      activeOpacity={isBlockCurrent || isBlockCompleted ? 0.75 : 1}
+                      disabled={isLocked}
                     >
                       <View style={styles.blockCardContent}>
                         <Text
@@ -233,9 +245,9 @@ export default function HomeScreen({ navigation }: Props) {
                           ]}
                         >
                           {isBlockCompleted
-                            ? 'Пройден'
+                            ? 'Пройден · нажми чтобы перепройти'
                             : isBlockCurrent
-                            ? 'Сейчас'
+                            ? 'Нажми, чтобы начать →'
                             : 'Откроется позже'}
                         </Text>
                       </View>
@@ -249,23 +261,31 @@ export default function HomeScreen({ navigation }: Props) {
                           {BLOCK_EMOJIS[block]}
                         </EmojiText>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   </View>
                 );
               })}
 
-              {/* Locked result card */}
-              <View style={styles.planCard}>
-                <View style={styles.planIconWrap}>
-                  <EmojiText size="sm" style={styles.planIconText}>{'🔒'}</EmojiText>
+              {/* Completion banner / locked plan card */}
+              {isCompleted ? (
+                <View style={styles.planCardDone}>
+                  <EmojiText size="sm" style={styles.planIconText}>{'🎉'}</EmojiText>
+                  <View style={styles.planBody}>
+                    <Text style={styles.planTitleDone}>{'Поздравляю!'}</Text>
+                    <Text style={styles.planSubDone}>{'Ты прошёл все блоки диагностики'}</Text>
+                  </View>
                 </View>
-                <View style={styles.planBody}>
-                  <Text style={styles.planTitle}>{'Твой план профессий'}</Text>
-                  <Text style={styles.planSub}>
-                    {'Откроется, когда пройдёшь все блоки'}
-                  </Text>
+              ) : (
+                <View style={styles.planCard}>
+                  <View style={styles.planIconWrap}>
+                    <EmojiText size="sm" style={styles.planIconText}>{'🔒'}</EmojiText>
+                  </View>
+                  <View style={styles.planBody}>
+                    <Text style={styles.planTitle}>{'Твой план профессий'}</Text>
+                    <Text style={styles.planSub}>{'Откроется, когда пройдёшь все блоки'}</Text>
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
           </>
         )}
@@ -499,6 +519,10 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     borderWidth: 1.5,
   },
+  blockCardCompleted: {
+    borderColor: colors.ok,
+    borderWidth: 1,
+  },
   blockCardContent: {
     flex: 1,
   },
@@ -580,5 +604,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.accent,
     marginTop: 2,
+  },
+  planCardDone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.ok + '18',
+    borderRadius: radii.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.lg,
+    marginTop: spacing.sm,
+    gap: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.ok,
+  },
+  planTitleDone: {
+    fontFamily: fontFamily.extrabold,
+    fontSize: 15,
+    color: colors.ok,
+  },
+  planSubDone: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 13,
+    color: colors.ok,
+    marginTop: 2,
+    opacity: 0.8,
   },
 });

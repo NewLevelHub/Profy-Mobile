@@ -158,8 +158,12 @@ function AppNavigator() {
           clearProfile();
           return;
         }
-        clearProfile();
-        setInitialRoute('Welcome');
+        if (status === 404) {
+          clearProfile();
+          setInitialRoute('Welcome');
+          return;
+        }
+        setInitialRoute('MainTabs');
       });
   }, []);
 

@@ -75,7 +75,7 @@ export type AppStackParamList = {
   ProfileSetup: undefined;
   ArtifactsSetup: undefined;
   GoalSelection: undefined;
-  Assessment: undefined;
+  Assessment: { retakeBlockIndex?: number } | undefined;
   Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
   ResultLoading: { assessmentId: string };
   MainTabs: { screen?: keyof AppTabParamList } | undefined;

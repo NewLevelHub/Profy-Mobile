@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
@@ -16,6 +15,7 @@ import { verifyEmail, resendVerification } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import { AuthStackParamList } from '../types';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
+import OtpInput from '../components/common/OtpInput';
 
 type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'VerifyEmail'>;
@@ -96,15 +96,10 @@ export default function VerifyEmailScreen({ navigation, route }: Props) {
 
         <View style={styles.form}>
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, codeError ? styles.inputError : null]}
-              placeholder="000000"
-              placeholderTextColor={colors.textMuted}
+            <OtpInput
               value={code}
-              onChangeText={(v) => { setCode(v.replace(/\D/g, '')); setCodeError(''); }}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus
+              onChange={(v) => { setCode(v); setCodeError(''); }}
+              hasError={!!codeError}
             />
             {codeError ? <Text style={styles.fieldError}>{codeError}</Text> : null}
           </View>
@@ -180,18 +175,6 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginBottom: spacing.md,
-  },
-  input: {
-    height: 56,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    fontFamily: fontFamily.semibold,
-    fontSize: 24,
-    color: colors.text,
-    textAlign: 'center',
-    letterSpacing: 8,
-    ...shadows.card,
   },
   inputError: {
     borderWidth: 1.5,

@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import axios from 'axios';
 import { loginUser } from '../api/auth';
@@ -32,6 +33,7 @@ export default function LoginScreen({ navigation }: Props) {
   const login = useAuthStore((s) => s.login);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [formError, setFormError] = useState('');
@@ -109,15 +111,29 @@ export default function LoginScreen({ navigation }: Props) {
             </View>
 
             <View style={styles.inputWrapper}>
-              <TextInput
-                style={[styles.input, passwordError ? styles.inputError : null]}
-                placeholder="Пароль"
-                placeholderTextColor={colors.textMuted}
-                value={password}
-                onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
-                secureTextEntry
-                autoComplete="current-password"
-              />
+              <View style={styles.passwordRow}>
+                <TextInput
+                  style={[styles.input, styles.inputWithEye, passwordError ? styles.inputError : null]}
+                  placeholder="Пароль"
+                  placeholderTextColor={colors.textMuted}
+                  value={password}
+                  onChangeText={(v) => { setPassword(v); setPasswordError(''); }}
+                  secureTextEntry={!showPassword}
+                  autoComplete="current-password"
+                />
+                <TouchableOpacity
+                  style={styles.eyeBtn}
+                  onPress={() => setShowPassword((v) => !v)}
+                  activeOpacity={0.6}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={22}
+                    color={colors.textMuted}
+                  />
+                </TouchableOpacity>
+              </View>
               {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
             </View>
 
@@ -222,6 +238,19 @@ const styles = StyleSheet.create({
   },
   inputWrapper: {
     marginBottom: spacing.md,
+  },
+  passwordRow: {
+    position: 'relative',
+  },
+  inputWithEye: {
+    paddingRight: 52,
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   input: {
     height: 56,

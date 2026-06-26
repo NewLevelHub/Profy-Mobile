@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView,
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +15,7 @@ import type { AppTabParamList, AppStackParamList, DirectionResult } from '../typ
 import { useResultStore } from '../store/resultStore';
 import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
+import { getReport } from '../api/result';
 import {
   colors,
   typography,
@@ -143,11 +145,26 @@ const sectionHeaderStyles = StyleSheet.create({
 
 export default function ResultScreen({ navigation }: Props) {
   const report = useResultStore((s) => s.report);
+  const setReport = useResultStore((s) => s.setReport);
   const goal = useAssessmentStore((s) => s.goal);
+  const assessmentId = useAssessmentStore((s) => s.assessmentId);
   const hasCompletedAssessment = useAssessmentStore((s) => s.hasCompletedAssessment);
   const ageGroup = useProfileStore((s) => s.profile?.age_group);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const showUniversityBtn = goal === 'university' && ageGroup === 'senior';
+
+  useEffect(() => {
+    if (hasCompletedAssessment && !report && assessmentId) {
+      setLoadingReport(true);
+      setLoadError(null);
+      getReport(assessmentId)
+        .then((r) => setReport(r))
+        .catch(() => setLoadError('Не удалось загрузить результаты. Попробуй ещё раз.'))
+        .finally(() => setLoadingReport(false));
+    }
+  }, [hasCompletedAssessment, report, assessmentId]);
 
   if (!hasCompletedAssessment) {
     return (
@@ -165,6 +182,45 @@ export default function ResultScreen({ navigation }: Props) {
           >
             <Text style={styles.goHomeBtnText}>{'Перейти на главную'}</Text>
           </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loadingReport || !report) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.emptyCenter}>
+          {loadError !== null ? (
+            <>
+              <Text style={styles.emptyIcon}>{'⚠️'}</Text>
+              <Text style={styles.emptyTitle}>{'Ошибка загрузки'}</Text>
+              <Text style={styles.emptyText}>{loadError}</Text>
+              <TouchableOpacity
+                style={styles.goHomeBtn}
+                onPress={() => {
+                  setLoadError(null);
+                  if (assessmentId) {
+                    setLoadingReport(true);
+                    getReport(assessmentId)
+                      .then((r) => setReport(r))
+                      .catch(() => setLoadError('Не удалось загрузить результаты. Попробуй ещё раз.'))
+                      .finally(() => setLoadingReport(false));
+                  }
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.goHomeBtnText}>{'Повторить'}</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.emptyText, { marginTop: spacing.lg }]}>
+                {'Загружаем результаты...'}
+              </Text>
+            </>
+          )}
         </View>
       </SafeAreaView>
     );

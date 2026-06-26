@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from 'react-native';
+import OtpInput from '../components/common/OtpInput';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import axios from 'axios';
@@ -27,6 +29,8 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [codeError, setCodeError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmError, setConfirmError] = useState('');
@@ -101,42 +105,65 @@ export default function ResetPasswordScreen({ navigation, route }: Props) {
 
         <View style={styles.form}>
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.codeInput, codeError ? styles.inputError : null]}
-              placeholder="000000"
-              placeholderTextColor={colors.textMuted}
+            <OtpInput
               value={code}
-              onChangeText={(v) => { setCode(v.replace(/\D/g, '')); setCodeError(''); }}
-              keyboardType="number-pad"
-              maxLength={6}
-              autoFocus
+              onChange={(v) => { setCode(v); setCodeError(''); }}
+              hasError={!!codeError}
             />
             {codeError ? <Text style={styles.fieldError}>{codeError}</Text> : null}
           </View>
 
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, passwordError ? styles.inputError : null]}
-              placeholder="Новый пароль"
-              placeholderTextColor={colors.textMuted}
-              value={password}
-              onChangeText={(v) => { setPassword(v); setPasswordError(''); setConfirmError(''); }}
-              secureTextEntry
-              autoComplete="new-password"
-            />
+            <View style={styles.passwordRow}>
+              <TextInput
+                style={[styles.input, styles.inputWithEye, passwordError ? styles.inputError : null]}
+                placeholder="Новый пароль"
+                placeholderTextColor={colors.textMuted}
+                value={password}
+                onChangeText={(v) => { setPassword(v); setPasswordError(''); setConfirmError(''); }}
+                secureTextEntry={!showPassword}
+                autoComplete="new-password"
+              />
+              <TouchableOpacity
+                style={styles.eyeBtn}
+                onPress={() => setShowPassword((v) => !v)}
+                activeOpacity={0.6}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+            </View>
             {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
           </View>
 
           <View style={styles.inputWrapper}>
-            <TextInput
-              style={[styles.input, confirmError ? styles.inputError : null]}
-              placeholder="Повторите пароль"
-              placeholderTextColor={colors.textMuted}
-              value={confirmPassword}
-              onChangeText={(v) => { setConfirmPassword(v); setConfirmError(''); }}
-              secureTextEntry
-              autoComplete="new-password"
-            />
+            <View style={styles.passwordRow}>
+              <TextInput
+                style={[styles.input, styles.inputWithEye, confirmError ? styles.inputError : null]}
+                placeholder="Повторите пароль"
+                placeholderTextColor={colors.textMuted}
+                value={confirmPassword}
+                onChangeText={(v) => { setConfirmPassword(v); setConfirmError(''); }}
+                secureTextEntry={!showConfirm}
+                autoComplete="new-password"
+              />
+              <TouchableOpacity
+                style={styles.eyeBtn}
+                onPress={() => setShowConfirm((v) => !v)}
+                activeOpacity={0.6}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Ionicons
+                  name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+            </View>
             {confirmError ? <Text style={styles.fieldError}>{confirmError}</Text> : null}
           </View>
 
@@ -193,17 +220,18 @@ const styles = StyleSheet.create({
   inputWrapper: {
     marginBottom: spacing.md,
   },
-  codeInput: {
-    height: 56,
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.lg,
-    fontFamily: fontFamily.semibold,
-    fontSize: 24,
-    color: colors.text,
-    textAlign: 'center',
-    letterSpacing: 8,
-    ...shadows.card,
+  passwordRow: {
+    position: 'relative',
+  },
+  inputWithEye: {
+    paddingRight: 52,
+  },
+  eyeBtn: {
+    position: 'absolute',
+    right: 16,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   input: {
     height: 56,

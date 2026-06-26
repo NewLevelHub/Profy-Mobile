@@ -3,13 +3,13 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type {
   AppStackParamList,
@@ -19,25 +19,34 @@ import type {
 } from '../types';
 import { useAssessmentStore } from '../store/assessmentStore';
 import { useProfileStore } from '../store/profileStore';
+import { useResultStore } from '../store/resultStore';
 import { getQuestions, saveAnswers } from '../api/questions';
 import OptionCard from '../components/common/OptionCard';
-import BlockRoadmap from '../components/common/BlockRoadmap';
 import ConfettiBlast from '../components/common/ConfettiBlast';
 import { EmojiText } from '../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } from '../constants/themes/themes';
 import { BLOCK_NAMES, BLOCK_DESCRIPTIONS, BLOCK_EMOJIS } from '../constants/blocks';
 import { getAssessmentBlocks } from '../utils/assessmentBlocks';
 
-type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
-type Phase = 'loading' | 'intro' | 'question' | 'praise' | 'roadmap';
+// UNUSED: roadmap phase was removed — after each block user goes to MainTabs (HomeScreen).
+// Dead code kept for reference: roadmapOpacity, showRoadmap(), handleRoadmapContinue(),
+// nextBlockIndex, {phase === 'roadmap'} JSX block, and roadmap* / blockCard* / planCard* styles.
 
-export default function AssessmentScreen({ navigation }: Props) {
+type Props = NativeStackScreenProps<AppStackParamList, 'Assessment'>;
+type Phase = 'loading' | 'intro' | 'question' | 'praise'; // 'roadmap' removed
+
+export default function AssessmentScreen({ navigation, route }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
   const goal = useAssessmentStore((s) => s.goal);
   const currentBlock = useAssessmentStore((s) => s.currentBlock);
   const advanceBlock = useAssessmentStore((s) => s.advanceBlock);
   const markBlockCompleted = useAssessmentStore((s) => s.markBlockCompleted);
+  const clearReport = useResultStore((s) => s.clearReport);
   const ageGroup = useProfileStore((s) => s.profile?.age_group ?? 'middle');
+
+  const retakeBlockIndex = route.params?.retakeBlockIndex ?? null;
+  const isRetaking = retakeBlockIndex !== null;
+  const effectiveBlockIndex = retakeBlockIndex ?? currentBlock;
 
   const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const totalBlocks = activeBlocks.length;
@@ -76,7 +85,7 @@ export default function AssessmentScreen({ navigation }: Props) {
       navigation.navigate('GoalSelection');
       return;
     }
-    if (currentBlock >= totalBlocks) {
+    if (!isRetaking && currentBlock >= totalBlocks) {
       navigation.navigate('ResultLoading', { assessmentId: assessmentId! });
       return;
     }
@@ -85,7 +94,7 @@ export default function AssessmentScreen({ navigation }: Props) {
       setPhase('loading');
       setError(null);
       try {
-        const data = await getQuestions(assessmentId!, activeBlocks[currentBlock]);
+        const data = await getQuestions(assessmentId!, activeBlocks[effectiveBlockIndex]);
         if (!isMountedRef.current) return;
         setQuestions(data);
         setQuestionIndex(0);
@@ -126,7 +135,7 @@ export default function AssessmentScreen({ navigation }: Props) {
         praiseTimerRef.current = null;
       }
     };
-  }, [currentBlock, loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [effectiveBlockIndex, loadTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleBack() {
     if (questionIndex === 0) return;
@@ -203,13 +212,13 @@ export default function AssessmentScreen({ navigation }: Props) {
     setError(null);
     try {
       await saveAnswers(assessmentId!, {
-        block: activeBlocks[currentBlock],
+        block: activeBlocks[effectiveBlockIndex],
         answers: blockAnswers,
       });
-      markBlockCompleted(activeBlocks[currentBlock]);
-      completedBlockRef.current = currentBlock;
-      const isLast = currentBlock + 1 >= totalBlocks;
-      const blockName = BLOCK_NAMES[activeBlocks[currentBlock]];
+      markBlockCompleted(activeBlocks[effectiveBlockIndex]);
+      completedBlockRef.current = effectiveBlockIndex;
+      const isLast = !isRetaking && (effectiveBlockIndex + 1 >= totalBlocks);
+      const blockName = BLOCK_NAMES[activeBlocks[effectiveBlockIndex]];
       setPraiseMessage({
         title: isLast ? 'Ты справился!' : 'Молодец!',
         subtitle: isLast ? 'Скоро покажем результат' : `Блок «${blockName}» пройден`,
@@ -228,14 +237,14 @@ export default function AssessmentScreen({ navigation }: Props) {
       ]).start();
       praiseTimerRef.current = setTimeout(() => {
         if (!isMountedRef.current) return;
-        if (isLast) {
+        if (isRetaking) {
+          clearReport();
+          navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+        } else if (isLast) {
           advanceBlock();
-        } else if (completedBlockRef.current === 0) {
-          // After first block — go home so user sees progress on HomeScreen
-          advanceBlock();
-          navigation.navigate('MainTabs');
         } else {
-          showRoadmap();
+          advanceBlock();
+          navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
         }
       }, 2500);
     } catch {
@@ -250,14 +259,17 @@ export default function AssessmentScreen({ navigation }: Props) {
       clearTimeout(praiseTimerRef.current);
       praiseTimerRef.current = null;
     }
+    if (isRetaking) {
+      clearReport();
+      navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+      return;
+    }
     const isLast = completedBlockRef.current + 1 >= totalBlocks;
     if (isLast) {
       advanceBlock();
-    } else if (completedBlockRef.current === 0) {
-      advanceBlock();
-      navigation.navigate('MainTabs');
     } else {
-      showRoadmap();
+      advanceBlock();
+      navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     }
   }
 
@@ -276,11 +288,11 @@ export default function AssessmentScreen({ navigation }: Props) {
     ]);
   }
 
-  const progress = totalBlocks > 0 ? (currentBlock + 1) / totalBlocks : 0;
+  const questionProgress = questions.length > 0 ? (questionIndex + 1) / questions.length : 0;
   const currentQuestion = questions[questionIndex];
   const isLastQuestion = questions.length > 0 && questionIndex === questions.length - 1;
   const showNextButton = isLastQuestion && selectedOptionIndex !== null;
-  const isLastBlock = currentBlock + 1 >= totalBlocks;
+  const isLastBlock = !isRetaking && (effectiveBlockIndex + 1 >= totalBlocks);
 
   const completedCount = completedBlockRef.current + 1;
   // Index of the next block that is now unlocked after praise
@@ -450,6 +462,7 @@ export default function AssessmentScreen({ navigation }: Props) {
       {/* ── QUESTION / INTRO / LOADING ─────────────────────────── */}
       {phase !== 'praise' && phase !== 'roadmap' && (
         <>
+          {/* Compact header: back ← | BlockName · вопрос X из Y | ✕ */}
           <View style={styles.header}>
             {phase === 'question' && questionIndex > 0 ? (
               <TouchableOpacity
@@ -462,26 +475,13 @@ export default function AssessmentScreen({ navigation }: Props) {
             ) : (
               <View style={styles.backBtn} />
             )}
-            <View style={styles.headerLeft}>
-              <Text style={styles.blockCounter}>
-                {`Блок ${currentBlock + 1} из ${totalBlocks}`}
-              </Text>
-              {phase !== 'loading' && (
-                <>
-                  <Text style={styles.blockName} numberOfLines={1}>
-                    {BLOCK_NAMES[activeBlocks[currentBlock]]}
-                  </Text>
-                  {phase === 'question' && questions.length > 0 && (
-                    <Text style={styles.questionCounter}>
-                      {`Вопрос ${questionIndex + 1} из ${questions.length}`}
-                    </Text>
-                  )}
-                </>
-              )}
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-              </View>
-            </View>
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {phase === 'loading'
+                ? BLOCK_NAMES[activeBlocks[effectiveBlockIndex]]
+                : phase === 'question' && questions.length > 0
+                ? `${BLOCK_NAMES[activeBlocks[effectiveBlockIndex]]} · вопрос ${questionIndex + 1} из ${questions.length}`
+                : BLOCK_NAMES[activeBlocks[effectiveBlockIndex]]}
+            </Text>
             <TouchableOpacity
               style={styles.closeBtn}
               onPress={handleExit}
@@ -491,8 +491,11 @@ export default function AssessmentScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.roadmapStrip}>
-            <BlockRoadmap currentBlock={currentBlock} goal={goal} compact />
+          {/* Question-scoped progress bar */}
+          <View style={styles.progressTrackWrap}>
+            <View style={styles.progressTrack}>
+              <Animated.View style={[styles.progressFill, { width: `${questionProgress * 100}%` }]} />
+            </View>
           </View>
 
           {phase === 'loading' && (
@@ -504,75 +507,80 @@ export default function AssessmentScreen({ navigation }: Props) {
           {phase === 'intro' && (
             <Animated.View style={[styles.center, { opacity: introOpacity }]}>
               <View style={styles.introBadge}>
-                <Text style={styles.introBadgeText}>{`Блок ${currentBlock + 1}`}</Text>
+                <Text style={styles.introBadgeText}>
+                {isRetaking ? 'Перепрохождение' : `Блок ${effectiveBlockIndex + 1}`}
+              </Text>
               </View>
               <Text style={styles.introTitle}>
-                {BLOCK_NAMES[activeBlocks[currentBlock]]}
+                {BLOCK_NAMES[activeBlocks[effectiveBlockIndex]]}
               </Text>
               <Text style={styles.introDescription}>
-                {BLOCK_DESCRIPTIONS[activeBlocks[currentBlock]]}
+                {BLOCK_DESCRIPTIONS[activeBlocks[effectiveBlockIndex]]}
               </Text>
             </Animated.View>
           )}
 
           {phase === 'question' && (
-            <ScrollView
-              style={styles.scroll}
-              contentContainerStyle={styles.scrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
-              {error !== null && <Text style={styles.errorText}>{error}</Text>}
-              {error !== null && !currentQuestion && (
-                <TouchableOpacity
-                  style={styles.retryBtn}
-                  onPress={() => setLoadTrigger((t) => t + 1)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
-                </TouchableOpacity>
-              )}
-              {currentQuestion !== undefined && (
-                <Animated.View style={{ opacity: questionOpacity }}>
-                  <Text
-                    style={[
-                      styles.questionText,
-                      ageGroup === 'junior' && styles.questionTextJunior,
-                    ]}
+            <View style={styles.questionPhase}>
+              <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {error !== null && <Text style={styles.errorText}>{error}</Text>}
+                {error !== null && !currentQuestion && (
+                  <TouchableOpacity
+                    style={styles.retryBtn}
+                    onPress={() => setLoadTrigger((t) => t + 1)}
+                    activeOpacity={0.8}
                   >
-                    {currentQuestion.text}
-                  </Text>
-                  <View style={styles.options}>
-                    {currentQuestion.options.map((opt) => (
-                      <OptionCard
-                        key={opt.index}
-                        text={opt.text}
-                        index={opt.index}
-                        selected={selectedOptionIndex === opt.index}
-                        ageGroup={ageGroup}
-                        onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
-                      />
-                    ))}
-                  </View>
-                  {showNextButton && (
-                    <TouchableOpacity
-                      style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
-                      onPress={handleNextBlock}
-                      disabled={saving}
-                      activeOpacity={0.8}
+                    <Text style={styles.retryBtnText}>{'Попробовать снова'}</Text>
+                  </TouchableOpacity>
+                )}
+                {currentQuestion !== undefined && (
+                  <Animated.View style={{ opacity: questionOpacity }}>
+                    <Text
+                      style={[
+                        styles.questionText,
+                        ageGroup === 'junior' && styles.questionTextJunior,
+                      ]}
                     >
-                      {saving ? (
-                        <ActivityIndicator size="small" color={colors.onPrimary} />
-                      ) : (
-                        <Text style={styles.nextBtnText}>
-                          {isLastBlock ? 'Завершить тест' : 'Следующий раздел'}
-                        </Text>
-                      )}
-                    </TouchableOpacity>
-                  )}
-                </Animated.View>
+                      {currentQuestion.text}
+                    </Text>
+                    <View style={styles.options}>
+                      {currentQuestion.options.map((opt) => (
+                        <OptionCard
+                          key={opt.index}
+                          text={opt.text}
+                          index={opt.index}
+                          selected={selectedOptionIndex === opt.index}
+                          ageGroup={ageGroup}
+                          onPress={() => handleOptionSelect(currentQuestion.id, opt.index)}
+                        />
+                      ))}
+                    </View>
+                  </Animated.View>
+                )}
+              </ScrollView>
+
+              {showNextButton && (
+                <View style={styles.nextBtnWrap}>
+                  <TouchableOpacity
+                    style={[styles.nextBtn, saving && styles.nextBtnDisabled]}
+                    onPress={handleNextBlock}
+                    disabled={saving}
+                    activeOpacity={0.8}
+                  >
+                    {saving ? (
+                      <ActivityIndicator size="small" color={colors.onPrimary} />
+                    ) : (
+                      <Text style={styles.nextBtnText}>{'Дальше'}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
               )}
-            </ScrollView>
+            </View>
           )}
         </>
       )}
@@ -589,73 +597,59 @@ const styles = StyleSheet.create({
   // ── Header (question / intro / loading) ───────────────────────
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.bg,
   },
-  headerLeft: {
+  headerTitle: {
     flex: 1,
-    marginRight: spacing.md,
+    fontFamily: fontFamily.semibold,
+    fontSize: fontSize.label,
+    color: colors.text,
+    textAlign: 'center',
   },
-  blockCounter: {
-    ...typography.small,
-    marginBottom: 2,
-  },
-  blockName: {
-    ...typography.label,
-    marginBottom: 2,
-  },
-  questionCounter: {
-    ...typography.small,
-    color: colors.textMuted,
-    marginBottom: spacing.sm,
+  progressTrackWrap: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.bg,
   },
   progressTrack: {
-    height: 6,
+    height: 8,
     backgroundColor: colors.track,
-    borderRadius: 3,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
-    height: 6,
+    height: 8,
     backgroundColor: colors.primary,
-    borderRadius: 3,
+    borderRadius: 4,
   },
   backBtn: {
     width: 32,
     height: 32,
     borderRadius: radii.md,
-    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.xs,
-    marginRight: spacing.md,
   },
   backBtnText: {
-    ...typography.caption,
+    ...typography.bodyStrong,
     color: colors.textSecondary,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: radii.md,
-    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.xs,
   },
   closeBtnText: {
     ...typography.caption,
     color: colors.textSecondary,
   },
-  roadmapStrip: {
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  questionPhase: {
+    flex: 1,
   },
   center: {
     flex: 1,
@@ -667,7 +661,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.lg,
-    paddingVertical: 6,
+    paddingVertical: spacing.xs,
     marginBottom: spacing.xl,
   },
   introBadgeText: {
@@ -688,7 +682,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: spacing['2xl'],
-    paddingBottom: 40,
+    paddingBottom: spacing['3xl'],
   },
   errorText: {
     ...typography.caption,
@@ -716,18 +710,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing['2xl'],
   },
   questionTextJunior: {
-    fontSize: 24,
-    lineHeight: 34,
+    fontSize: fontSize.title,
+    lineHeight: 30,
   },
   options: {
     marginBottom: spacing.sm,
+  },
+  nextBtnWrap: {
+    paddingHorizontal: spacing['2xl'],
+    paddingBottom: spacing['3xl'],
+    paddingTop: spacing.md,
+    backgroundColor: colors.bg,
   },
   nextBtn: {
     backgroundColor: colors.primary,
     borderRadius: radii.pill,
     paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginTop: spacing.lg,
     ...shadows.button,
   },
   nextBtnDisabled: {
@@ -874,7 +873,7 @@ const styles = StyleSheet.create({
   blockCardCircle: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -889,8 +888,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.nodeLocked,
   },
   blockCardCircleText: {
-    fontFamily: fontFamily.extrabold,
-    fontSize: 16,
+    ...typography.label,
     color: colors.onPrimary,
   },
   blockCardCircleTextLocked: {
@@ -900,8 +898,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   blockCardName: {
-    fontFamily: fontFamily.bold,
-    fontSize: 15,
+    ...typography.label,
     color: colors.text,
   },
   blockCardNameCurrent: {
@@ -912,10 +909,9 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.semibold,
   },
   blockCardStatus: {
-    fontFamily: fontFamily.semibold,
-    fontSize: 13,
+    ...typography.caption,
     color: colors.textMuted,
-    marginTop: 2,
+    marginTop: spacing.xs,
   },
   blockCardStatusCompleted: {
     color: colors.ok,
@@ -937,14 +933,14 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   blockCardEmoji: {
-    fontSize: 22,
+    fontSize: fontSize.title,
   },
 
   // Locked plan card
   planCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF7ED',
+    backgroundColor: colors.primaryGhost,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.lg,
@@ -961,21 +957,19 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   planCardIconText: {
-    fontSize: 22,
+    fontSize: fontSize.title,
   },
   planCardBody: {
     flex: 1,
   },
   planCardTitle: {
-    fontFamily: fontFamily.extrabold,
-    fontSize: 15,
-    color: '#9A3412',
+    ...typography.label,
+    color: colors.primaryDeep,
   },
   planCardSubtitle: {
-    fontFamily: fontFamily.semibold,
-    fontSize: 13,
+    ...typography.caption,
     color: colors.accent,
-    marginTop: 2,
+    marginTop: spacing.xs,
   },
 
   // Continue button

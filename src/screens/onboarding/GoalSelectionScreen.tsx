@@ -1,17 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Modal,
   ActivityIndicator,
-  SafeAreaView,
   StyleSheet,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { AppStackParamList, AssessmentGoal, AssessmentResponse } from '../../types';
-import { startAssessment, getCurrentAssessment } from '../../api/assessment';
+import type { AppStackParamList, AssessmentGoal } from '../../types';
+import { startAssessment } from '../../api/assessment';
 import { useAssessmentStore } from '../../store/assessmentStore';
 import { useProfileStore } from '../../store/profileStore';
 import BlockRoadmap from '../../components/common/BlockRoadmap';
@@ -59,27 +58,11 @@ const GOAL_CARDS: GoalCard[] = [
 export default function GoalSelectionScreen({ navigation }: Props) {
   const ageGroup = useProfileStore((s) => s.profile?.age_group);
   const setAssessment = useAssessmentStore((s) => s.setAssessment);
-  const resetAssessment = useAssessmentStore((s) => s.resetAssessment);
-  const [loading, setLoading] = useState(true);
-  const [cardLoading, setCardLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [existing, setExisting] = useState<AssessmentResponse | null>(null);
-  const [dialogVisible, setDialogVisible] = useState(false);
-
-  useEffect(() => {
-    getCurrentAssessment()
-      .then((assessment) => {
-        setExisting(assessment);
-        setDialogVisible(true);
-      })
-      .catch(() => {
-        // 404 — no active assessment, show goal cards
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   async function handleGoalSelect(goal: AssessmentGoal) {
-    setCardLoading(true);
+    setLoading(true);
     setError(null);
     try {
       const assessment = await startAssessment(goal);
@@ -88,34 +71,13 @@ export default function GoalSelectionScreen({ navigation }: Props) {
     } catch {
       setError('Не удалось начать тест. Попробуй ещё раз.');
     } finally {
-      setCardLoading(false);
+      setLoading(false);
     }
-  }
-
-  function handleContinue() {
-    if (!existing) return;
-    setAssessment(existing.id, existing.goal, existing.current_block);
-    setDialogVisible(false);
-    navigation.navigate('Assessment');
-  }
-
-  function handleRestart() {
-    setDialogVisible(false);
-    setExisting(null);
-    resetAssessment();
   }
 
   const visibleCards = GOAL_CARDS.filter(
     (card) => !card.seniorOnly || ageGroup === 'senior',
   );
-
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -145,7 +107,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
             key={card.title}
             style={styles.card}
             onPress={() => handleGoalSelect(card.goal)}
-            disabled={cardLoading}
+            disabled={loading}
             activeOpacity={0.7}
           >
             <View style={styles.cardIconWrap}>
@@ -159,7 +121,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
           </TouchableOpacity>
         ))}
 
-        {cardLoading && (
+        {loading && (
           <ActivityIndicator
             size="small"
             color={colors.primary}
@@ -169,38 +131,6 @@ export default function GoalSelectionScreen({ navigation }: Props) {
 
         {error !== null && <Text style={styles.error}>{error}</Text>}
       </ScrollView>
-
-      <Modal
-        visible={dialogVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={handleRestart}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.dialog}>
-            <Text style={styles.dialogTitle}>Продолжить прохождение?</Text>
-            <Text style={styles.dialogBody}>
-              У тебя есть незавершённый тест. Хочешь продолжить с того места, где остановился?
-            </Text>
-            <View style={styles.dialogActions}>
-              <TouchableOpacity
-                style={styles.btnOutline}
-                onPress={handleRestart}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.btnOutlineText}>Начать заново</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.btnPrimary}
-                onPress={handleContinue}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.btnPrimaryText}>Да</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -208,12 +138,6 @@ export default function GoalSelectionScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.bg,
-  },
-  loader: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.bg,
   },
   scroll: {
@@ -307,53 +231,5 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     color: colors.danger,
     textAlign: 'center',
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing['2xl'],
-  },
-  dialog: {
-    width: '100%',
-    backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: spacing['2xl'],
-  },
-  dialogTitle: {
-    ...typography.subtitle,
-    marginBottom: spacing.md,
-  },
-  dialogBody: {
-    ...typography.body,
-    marginBottom: spacing['2xl'],
-  },
-  dialogActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  btnOutline: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.sm,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  btnOutlineText: {
-    ...typography.caption,
-    color: colors.primary,
-  },
-  btnPrimary: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: radii.sm,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  btnPrimaryText: {
-    ...typography.caption,
-    color: colors.onPrimary,
   },
 });
