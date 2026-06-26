@@ -50,8 +50,15 @@ export default function LoginScreen({ navigation }: Props) {
       const { access_token, user } = await loginUser(email.trim(), password);
       login(access_token, user);
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 401) {
-        setFormError('Неверный email или пароль');
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 401) {
+          setFormError('Неверный email или пароль');
+        } else if (status === 403 && err.response?.data?.detail?.detail === 'email_not_verified') {
+          navigation.navigate('VerifyEmail', { email: email.trim() });
+        } else {
+          setFormError('Ошибка. Попробуйте позже');
+        }
       } else {
         setFormError('Ошибка. Попробуйте позже');
       }
@@ -127,6 +134,10 @@ export default function LoginScreen({ navigation }: Props) {
               ) : (
                 <Text style={styles.buttonText}>Войти</Text>
               )}
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.forgotLink} onPress={() => navigation.navigate('ForgotPassword')}>
+              <Text style={styles.forgotText}>Забыли пароль?</Text>
             </TouchableOpacity>
           </View>
 
@@ -254,6 +265,15 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.label,
     color: colors.onPrimary,
+  },
+  forgotLink: {
+    alignItems: 'center',
+    paddingTop: spacing.md,
+  },
+  forgotText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontFamily: fontFamily.semibold,
   },
   link: {
     alignItems: 'center',

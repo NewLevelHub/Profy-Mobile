@@ -56,6 +56,9 @@ export type RootStackParamList = {
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
+  VerifyEmail: { email: string };
+  ForgotPassword: undefined;
+  ResetPassword: { email: string };
 };
 
 export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'MainTabs';
