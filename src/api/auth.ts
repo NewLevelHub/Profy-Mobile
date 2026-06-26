@@ -42,3 +42,14 @@ export async function verifyResetCode(email: string, code: string): Promise<void
 export async function resetPassword(email: string, code: string, newPassword: string): Promise<void> {
   await apiClient.post('/api/v1/auth/reset-password', { email, code, new_password: newPassword });
 }
+
+export interface GoogleAuthResult {
+  access_token: string;
+  user_id: string;
+  is_new_user: boolean;
+}
+
+export async function loginWithGoogle(idToken: string): Promise<GoogleAuthResult> {
+  const { data } = await apiClient.post<GoogleAuthResult>('/api/v1/auth/google', { id_token: idToken });
+  return data;
+}
