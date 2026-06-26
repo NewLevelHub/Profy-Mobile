@@ -37,10 +37,10 @@ const AGE_GROUP_LABELS: Record<string, string> = {
   senior: 'Старший (15–18 лет)',
 };
 
-function InfoRow({ label, value }: { label: string; value: string | number | undefined | null }) {
+function InfoRow({ label, value, last }: { label: string; value: string | number | undefined | null; last?: boolean }) {
   if (!value && value !== 0) return null;
   return (
-    <View style={styles.infoRow}>
+    <View style={[styles.infoRow, last && styles.infoRowLast]}>
       <Text style={styles.infoLabel}>{label}</Text>
       <Text style={styles.infoValue}>{value}</Text>
     </View>
@@ -136,17 +136,22 @@ export default function ProfileScreen({ navigation }: Props) {
               <InfoRow label="Класс" value={profile.grade ? `${profile.grade} класс` : null} />
               <InfoRow label="Город" value={profile.city} />
               <InfoRow label="Страна" value={profile.country} />
-              <InfoRow label="Язык обучения" value={profile.language} />
+              <InfoRow label="Язык обучения" value={profile.language} last />
             </View>
 
-            {/* Subjects */}
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Предметы</Text>
-              <ChipList label="❤️  Нравятся" items={profile.subjects_like} />
-              <ChipList label="😕  Не нравятся" items={profile.subjects_dislike} />
-              <ChipList label="✅  Даются легко" items={profile.subjects_easy} />
-              <ChipList label="🤯  Даются сложно" items={profile.subjects_hard} />
-            </View>
+            {/* Subjects — only shown if at least one list is non-empty */}
+            {((profile.subjects_like?.length ?? 0) > 0 ||
+              (profile.subjects_dislike?.length ?? 0) > 0 ||
+              (profile.subjects_easy?.length ?? 0) > 0 ||
+              (profile.subjects_hard?.length ?? 0) > 0) && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Предметы</Text>
+                <ChipList label="❤️  Нравятся" items={profile.subjects_like} />
+                <ChipList label="😕  Не нравятся" items={profile.subjects_dislike} />
+                <ChipList label="✅  Даются легко" items={profile.subjects_easy} />
+                <ChipList label="🤯  Даются сложно" items={profile.subjects_hard} />
+              </View>
+            )}
           </>
         ) : (
           <View style={styles.emptyCard}>
@@ -263,6 +268,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  infoRowLast: {
+    borderBottomWidth: 0,
   },
   infoLabel: {
     fontFamily: fontFamily.semibold,

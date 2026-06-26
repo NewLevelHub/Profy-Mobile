@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type {
@@ -39,6 +40,7 @@ export default function AssessmentScreen({ navigation, route }: Props) {
   const assessmentId = useAssessmentStore((s) => s.assessmentId);
   const goal = useAssessmentStore((s) => s.goal);
   const currentBlock = useAssessmentStore((s) => s.currentBlock);
+  const completedBlocks = useAssessmentStore((s) => s.completedBlocks);
   const advanceBlock = useAssessmentStore((s) => s.advanceBlock);
   const markBlockCompleted = useAssessmentStore((s) => s.markBlockCompleted);
   const clearReport = useResultStore((s) => s.clearReport);
@@ -294,7 +296,7 @@ export default function AssessmentScreen({ navigation, route }: Props) {
   const showNextButton = isLastQuestion && selectedOptionIndex !== null;
   const isLastBlock = !isRetaking && (effectiveBlockIndex + 1 >= totalBlocks);
 
-  const completedCount = completedBlockRef.current + 1;
+  const completedCount = isRetaking ? completedBlocks.size : completedBlockRef.current + 1;
   // Index of the next block that is now unlocked after praise
   const nextBlockIndex = completedBlockRef.current + 1;
 
@@ -317,7 +319,7 @@ export default function AssessmentScreen({ navigation, route }: Props) {
               <Text style={styles.praiseSubtitle}>{praiseMessage.subtitle}</Text>
 
               {/* Progress bar — only for non-last blocks */}
-              {completedBlockRef.current + 1 < totalBlocks && (
+              {!isRetaking && completedBlockRef.current + 1 < totalBlocks && (
                 <View style={styles.praiseProgressCard}>
                   <Text style={styles.praiseProgressLabel}>{'Прогресс'}</Text>
                   <View style={styles.praiseProgressBar}>
@@ -470,7 +472,7 @@ export default function AssessmentScreen({ navigation, route }: Props) {
                 onPress={handleBack}
                 hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
-                <Text style={styles.backBtnText}>{'←'}</Text>
+                <Ionicons name="arrow-back" size={22} color={colors.textSecondary} />
               </TouchableOpacity>
             ) : (
               <View style={styles.backBtn} />
@@ -632,10 +634,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  backBtnText: {
-    ...typography.bodyStrong,
-    color: colors.textSecondary,
   },
   closeBtn: {
     width: 32,
