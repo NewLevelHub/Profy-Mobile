@@ -44,7 +44,6 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 const TAB_ICONS: Record<keyof AppTabParamList, { active: IoniconName; inactive: IoniconName }> = {
   Home: { active: 'home', inactive: 'home-outline' },
   Result: { active: 'document-text', inactive: 'document-text-outline' },
-  Roadmap: { active: 'map', inactive: 'map-outline' },
   Profile: { active: 'person', inactive: 'person-outline' },
 };
 
@@ -106,14 +105,6 @@ function MainTabNavigator() {
         options={{
           tabBarIcon: ({ focused }) => <TabIcon tab="Result" focused={focused} />,
           tabBarLabel: ({ focused }) => <TabLabel label="Результаты" focused={focused} />,
-        }}
-      />
-      <Tab.Screen
-        name="Roadmap"
-        component={RoadmapScreen}
-        options={{
-          tabBarIcon: ({ focused }) => <TabIcon tab="Roadmap" focused={focused} />,
-          tabBarLabel: ({ focused }) => <TabLabel label="Роадмап" focused={focused} />,
         }}
       />
       <Tab.Screen
@@ -195,6 +186,7 @@ function AppNavigator() {
       <AppStack.Screen name="UniversityList" component={UniversityListScreen} />
       <AppStack.Screen name="ProgramDetail" component={ProgramDetailScreen} />
       <AppStack.Screen name="GapAnalysis" component={GapAnalysisScreen} />
+      <AppStack.Screen name="Roadmap" component={RoadmapScreen} />
     </AppStack.Navigator>
   );
 }

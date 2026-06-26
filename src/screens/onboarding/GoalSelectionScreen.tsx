@@ -14,6 +14,7 @@ import { startAssessment } from '../../api/assessment';
 import { useAssessmentStore } from '../../store/assessmentStore';
 import { useProfileStore } from '../../store/profileStore';
 import BlockRoadmap from '../../components/common/BlockRoadmap';
+import { getAssessmentBlocks } from '../../utils/assessmentBlocks';
 import { EmojiText } from '../../components/common/EmojiText';
 import { colors, typography, spacing, radii, shadows } from '../../constants/themes/themes';
 
@@ -56,7 +57,7 @@ const GOAL_CARDS: GoalCard[] = [
 ];
 
 export default function GoalSelectionScreen({ navigation }: Props) {
-  const ageGroup = useProfileStore((s) => s.profile?.age_group);
+  const ageGroup = useProfileStore((s) => s.profile?.age_group ?? 'middle');
   const setAssessment = useAssessmentStore((s) => s.setAssessment);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,9 +76,7 @@ export default function GoalSelectionScreen({ navigation }: Props) {
     }
   }
 
-  const visibleCards = GOAL_CARDS.filter(
-    (card) => !card.seniorOnly || ageGroup === 'senior',
-  );
+  const visibleCards = GOAL_CARDS.filter((card) => !card.seniorOnly || ageGroup === 'senior');
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -90,17 +89,19 @@ export default function GoalSelectionScreen({ navigation }: Props) {
           Выбери то, что тебе сейчас важнее всего
         </Text>
 
+        {/* roadmap temporarily hidden
         <View style={styles.roadmapCard}>
           <View style={styles.roadmapCardHeader}>
             <Text style={styles.roadmapHint}>
-              {`Впереди ${ageGroup === 'senior' ? '8' : '7'} блоков`}
+              {`Впереди ${ageGroup === 'senior' ? '7–8' : getAssessmentBlocks(ageGroup, null).length} блоков`}
             </Text>
             <View style={styles.roadmapBadge}>
               <Text style={styles.roadmapBadgeText}>{'~20 мин'}</Text>
             </View>
           </View>
-          <BlockRoadmap currentBlock={-1} goal={null} previewMode />
+          <BlockRoadmap currentBlock={-1} goal={null} ageGroup={ageGroup} previewMode />
         </View>
+        */}
 
         {visibleCards.map((card) => (
           <TouchableOpacity

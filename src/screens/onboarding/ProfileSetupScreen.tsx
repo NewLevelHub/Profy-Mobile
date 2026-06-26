@@ -21,6 +21,8 @@ import { colors, typography, spacing, radii, shadows, fontFamily, fontSize } fro
 
 type Props = NativeStackScreenProps<AppStackParamList, 'ProfileSetup'>;
 
+const LANGUAGES = ['Русский', 'Казахский', 'Английский'];
+
 const SUBJECTS = [
   'Математика', 'Физика', 'Химия', 'Биология',
   'История', 'География', 'Русский язык', 'Литература',
@@ -192,13 +194,16 @@ export default function ProfileSetupScreen({ navigation }: Props) {
               </Field>
 
               <Field label="Язык обучения">
-                <TextInput
-                  style={styles.input}
-                  value={language}
-                  onChangeText={setLanguage}
-                  placeholder="Русский / Казахский / Английский"
-                  placeholderTextColor={colors.textMuted}
-                />
+                <View style={styles.chipRow}>
+                  {LANGUAGES.map((lang) => (
+                    <SubjectCard
+                      key={lang}
+                      label={lang}
+                      selected={language === lang}
+                      onPress={() => setLanguage((prev) => (prev === lang ? '' : lang))}
+                    />
+                  ))}
+                </View>
               </Field>
             </View>
           )}

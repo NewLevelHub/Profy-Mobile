@@ -66,7 +66,6 @@ export type PraiseNextScreen = 'ArtifactsSetup' | 'GoalSelection' | 'MainTabs';
 export type AppTabParamList = {
   Home: undefined;
   Result: undefined;
-  Roadmap: undefined;
   Profile: undefined;
 };
 
@@ -79,6 +78,7 @@ export type AppStackParamList = {
   Praise: { title: string; subtitle?: string; nextScreen: PraiseNextScreen };
   ResultLoading: { assessmentId: string };
   MainTabs: { screen?: keyof AppTabParamList } | undefined;
+  Roadmap: undefined;
   DirectionDetail: { direction: DirectionResult };
   UniversityList: { directionSlug: string };
   ProgramDetail: { programId: string; programName: string; universityName: string };

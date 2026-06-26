@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
-import type { AssessmentGoal } from '../../types';
+import type { AgeGroup, AssessmentGoal } from '../../types';
 import {
   colors,
   fontFamily,
@@ -8,12 +8,14 @@ import {
   spacing,
   typography,
 } from '../../constants/themes/themes';
-import { ALL_BLOCKS, BLOCK_NAMES } from '../../constants/blocks';
+import { BLOCK_NAMES } from '../../constants/blocks';
+import { getAssessmentBlocks } from '../../utils/assessmentBlocks';
 
 interface BlockRoadmapProps {
   /** 0-indexed block position. -1 = preview (all locked). >= totalBlocks = all done. */
   currentBlock: number;
   goal: AssessmentGoal | null;
+  ageGroup?: AgeGroup;
   compact?: boolean;
   /** When true, locked circles render with soft-purple instead of gray (used on goal selection screen). */
   previewMode?: boolean;
@@ -27,8 +29,8 @@ const LINE_FULL = 18;
 const LINE_COMPACT = 12;
 const LABEL_W = 60;
 
-function BlockRoadmap({ currentBlock, goal, compact = false, previewMode = false }: BlockRoadmapProps) {
-  const activeBlocks = goal === 'university' ? ALL_BLOCKS : ALL_BLOCKS.slice(0, 7);
+function BlockRoadmap({ currentBlock, goal, ageGroup = 'middle', compact = false, previewMode = false }: BlockRoadmapProps) {
+  const activeBlocks = getAssessmentBlocks(ageGroup, goal);
   const nodeSize = compact ? NODE_COMPACT : NODE_FULL;
   const lineW = compact ? LINE_COMPACT : LINE_FULL;
   const pulseAnim = useRef(new Animated.Value(1)).current;
